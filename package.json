@@ -1,0 +1,33 @@
+{
+  "name": "firmenbuchnotifier",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "cron-check": "npx tsx src/bin/cron-check.ts",
+    "test:api": "npx tsx src/tests/test_api_client.ts",
+    "test:cron": "npx tsx src/tests/test_cron.ts",
+    "test": "npm run test:api && npm run test:cron"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.43.0",
+    "dotenv": "^16.4.5",
+    "fast-xml-parser": "^4.3.6",
+    "next": "16.2.6",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "resend": "^3.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.6",
+    "typescript": "^5"
+  }
+}
