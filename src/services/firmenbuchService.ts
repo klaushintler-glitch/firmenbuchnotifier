@@ -201,7 +201,7 @@ export async function getCompanyDocuments(fnr: string): Promise<DocumentInfo[]> 
     }));
 
     // Sort by submission date (eingereicht) descending (newest first)
-    mapped.sort((a, b) => {
+    mapped.sort((a: DocumentInfo, b: DocumentInfo) => {
       const dateA = a.eingereicht || '';
       const dateB = b.eingereicht || '';
       return dateB.localeCompare(dateA);
