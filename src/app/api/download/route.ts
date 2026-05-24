@@ -12,16 +12,30 @@ export async function GET(request: Request) {
   try {
     const doc = await downloadDocument(key);
     
-    // Decode base64 to binary buffer
-    const buffer = Buffer.from(doc.content, 'base64');
+    const isXml = doc.extension === 'xml' || doc.contentType?.includes('xml');
+    let responseBody: string | Buffer;
     
-    // Return standard response with attachment headers
-    return new Response(buffer, {
+    if (isXml) {
+      // Decode base64 to UTF-8 string for XML files to prevent Next.js/Vercel serialization bugs
+      responseBody = Buffer.from(doc.content, 'base64').toString('utf8');
+    } else {
+      // Keep binary buffer for PDF and other binary formats
+      responseBody = Buffer.from(doc.content, 'base64');
+    }
+    
+    // RFC 6266 compliant filename encoding
+    const safeFilename = doc.filename.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const encodedFilename = encodeURIComponent(doc.filename);
+    const byteLength = typeof responseBody === 'string' 
+      ? Buffer.byteLength(responseBody, 'utf8') 
+      : responseBody.length;
+
+    return new Response(responseBody, {
       status: 200,
       headers: {
-        'Content-Type': doc.contentType || 'application/pdf',
-        'Content-Disposition': `attachment; filename="${encodeURIComponent(doc.filename)}"`,
-        'Content-Length': buffer.length.toString(),
+        'Content-Type': doc.contentType || (isXml ? 'application/xml' : 'application/pdf'),
+        'Content-Disposition': `attachment; filename="${safeFilename}"; filename*=UTF-8''${encodedFilename}`,
+        'Content-Length': byteLength.toString(),
       }
     });
   } catch (error: any) {
