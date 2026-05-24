@@ -11,16 +11,15 @@ export async function GET(request: Request) {
 
   try {
     const doc = await downloadDocument(key);
-    
     const isXml = doc.extension === 'xml' || doc.contentType?.includes('xml');
-    let responseBody: string | Buffer;
+    let responseBody: string | Uint8Array;
     
     if (isXml) {
       // Decode base64 to UTF-8 string for XML files to prevent Next.js/Vercel serialization bugs
       responseBody = Buffer.from(doc.content, 'base64').toString('utf8');
     } else {
-      // Keep binary buffer for PDF and other binary formats
-      responseBody = Buffer.from(doc.content, 'base64');
+      // Keep binary Uint8Array for PDF and other binary formats to satisfy TypeScript BodyInit type
+      responseBody = new Uint8Array(Buffer.from(doc.content, 'base64'));
     }
     
     // RFC 6266 compliant filename encoding
@@ -28,9 +27,9 @@ export async function GET(request: Request) {
     const encodedFilename = encodeURIComponent(doc.filename);
     const byteLength = typeof responseBody === 'string' 
       ? Buffer.byteLength(responseBody, 'utf8') 
-      : responseBody.length;
+      : responseBody.byteLength;
 
-    return new Response(responseBody, {
+    return new Response(responseBody as any, {
       status: 200,
       headers: {
         'Content-Type': doc.contentType || (isXml ? 'application/xml' : 'application/pdf'),
