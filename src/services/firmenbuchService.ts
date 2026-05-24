@@ -191,7 +191,7 @@ export async function getCompanyDocuments(fnr: string): Promise<DocumentInfo[]> 
 
     const json = await response.json();
     const raw = json.data || [];
-    return raw.map((item: any) => ({
+    const mapped = raw.map((item: any) => ({
       key: item.key,
       fnr: item.fnr,
       az: item.az,
@@ -199,6 +199,15 @@ export async function getCompanyDocuments(fnr: string): Promise<DocumentInfo[]> 
       groesse: item.groesse || 0,
       eingereicht: item.eingereicht || ''
     }));
+
+    // Sort by submission date (eingereicht) descending (newest first)
+    mapped.sort((a, b) => {
+      const dateA = a.eingereicht || '';
+      const dateB = b.eingereicht || '';
+      return dateB.localeCompare(dateA);
+    });
+
+    return mapped;
   } catch (error) {
     console.error("[FirmaFind API] Get documents error:", error);
     throw error;
