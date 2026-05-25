@@ -12,12 +12,12 @@ export default function AboutCard() {
       <div className="about-divider"></div>
       
       <p className="about-text">
-        Dieses Projekt ermöglicht die kostenlose und einfache Suche im österreichischen Firmenbuch (Commercial Register). 
+        Dieses Projekt ermöglicht eine einfache Suche im österreichischen Firmenbuch (Daten zur Verfügung gestellt von findfirma.at). 
         Favorisieren Sie bis zu <strong>10 Unternehmen</strong>, um sofort per E-Mail benachrichtigt zu werden, sobald ein neues Dokument (z.B. Jahresabschluss, Beschlüsse) eingereicht wird.
       </p>
 
       <p className="about-text text-highlight">
-        Die Nutzung der Webseite ist komplett gratis. Keine Abonnements, keine versteckten Kosten.
+        Die Nutzung der Webseite gratis. 
       </p>
 
       <div className="about-divider"></div>
