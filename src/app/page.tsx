@@ -210,7 +210,18 @@ export default function Home() {
 
   // Companies to display (either filtered by search results or by favorites)
   const companiesToDisplay = showFavoritesOnly 
-    ? results.filter(r => isFavorited(r.fnr))
+    ? favorites.map(fav => {
+        const fullCompany = results.find(r => r.fnr === fav.fnr);
+        return fullCompany || {
+          fnr: fav.fnr,
+          name: fav.company_name,
+          sitz: 'Österreich',
+          rechtsform: {
+            code: 'Firma',
+            text: 'Favorisiertes Unternehmen'
+          }
+        };
+      })
     : results;
 
   return (
@@ -254,10 +265,6 @@ export default function Home() {
               className={`action-btn btn-favorites-toggle ${showFavoritesOnly ? 'active' : ''}`}
               onClick={() => {
                 setShowFavoritesOnly(!showFavoritesOnly);
-                if (!showFavoritesOnly) {
-                  // Pre-load search results to sync names with favorites
-                  performSearch('');
-                }
               }}
             >
               ❤️ Favoriten ({favorites.length}/10)
