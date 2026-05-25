@@ -229,7 +229,16 @@ export default function Home() {
       {/* App Header */}
       <header className="app-header">
         <div className="logo-section">
-          <div className="logo-icon">FN</div>
+          <img 
+            src="/logo.png" 
+            alt="Logo" 
+            style={{ 
+              height: '40px', 
+              width: 'auto', 
+              maxHeight: '44px',
+              objectFit: 'contain' 
+            }} 
+          />
           <h1 className="logo-text">FirmenbuchNotifier</h1>
         </div>
 
