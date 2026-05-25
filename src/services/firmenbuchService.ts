@@ -122,12 +122,14 @@ export async function searchCompany(wortlaut: string, exact = false): Promise<Co
       if (response.ok) {
         const json = await response.json();
         const raw = json.data || [];
-        return raw.map((item: any) => ({
-          fnr: item.fnr,
-          name: item.name,
-          sitz: item.sitz || item.city || '',
-          rechtsform: mapRechtsform(item.rechtsform || '')
-        }));
+        if (raw.length > 0) {
+          return raw.map((item: any) => ({
+            fnr: item.fnr,
+            name: item.name,
+            sitz: item.sitz || item.city || '',
+            rechtsform: mapRechtsform(item.rechtsform || '')
+          }));
+        }
       }
     } catch (e) {
       console.warn("[FirmaFind API] Public search failed. Falling back to hardcoded mock data:", e);
