@@ -123,16 +123,19 @@ export async function runCronCheck(): Promise<void> {
     if (notificationsToSend.length > 0) {
       console.log(`[Cron Job] Sending ${notificationsToSend.length} email notifications...`);
       const fromEmail = process.env.NOTIFICATION_EMAIL_FROM || 'onboarding@resend.dev';
+      const appUrl = process.env.APP_URL || 'https://firmenbuchnotifier.vercel.app';
 
       for (const notification of notificationsToSend) {
         try {
+          const directLink = `${appUrl}?fnr=${encodeURIComponent(notification.fnr)}&doc=${encodeURIComponent(notification.doc.key)}`;
+          
           await resend.emails.send({
             from: fromEmail,
             to: notification.userEmail,
             subject: `🔔 Firmenbuch Update: Neue Datei für ${notification.companyName}`,
             html: `
               <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; border-radius: 8px;">
-                <h2 style="color: #E60023; border-bottom: 2px solid #E60023; padding-bottom: 10px;">Firmenbuch Notifier Update</h2>
+                <h2 style="color: #1877F2; border-bottom: 2px solid #1877F2; padding-bottom: 10px;">Firmenbuch Notifier Update</h2>
                 <p>Hallo,</p>
                 <p>für das von Ihnen favorisierte Unternehmen <strong>${notification.companyName} (Firmenbuchnummer: ${notification.fnr})</strong> wurde ein neues Dokument hochgeladen:</p>
                 
@@ -151,7 +154,12 @@ export async function runCronCheck(): Promise<void> {
                   </tr>
                 </table>
                 
-                <p>Sie können sich das Dokument in Ihrem Web-Dashboard ansehen und direkt herunterladen.</p>
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="${directLink}" style="background-color: #1877F2; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 16px;">
+                    📄 Dokument in App öffnen & ansehen
+                  </a>
+                </div>
+                
                 <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;" />
                 <p style="font-size: 12px; color: #777; text-align: center;">Diese E-Mail wurde automatisch gesendet. Sie können Ihre Favoriten jederzeit im Web-Dashboard verwalten.</p>
               </div>

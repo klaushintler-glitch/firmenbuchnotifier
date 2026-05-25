@@ -30,6 +30,41 @@ export default function Home() {
   // Drawer state
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [highlightedDocKey, setHighlightedDocKey] = useState<string | null>(null);
+
+  // Check for direct-link URL parameters on mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const params = new URLSearchParams(window.location.search);
+    const fnrParam = params.get('fnr');
+    const docParam = params.get('doc');
+
+    if (fnrParam) {
+      setQuery(fnrParam);
+      if (docParam) {
+        setHighlightedDocKey(docParam);
+      }
+      
+      const fetchDirectCompany = async () => {
+        try {
+          const response = await fetch(`/api/search?query=${encodeURIComponent(fnrParam)}`);
+          if (response.ok) {
+            const data = await response.json();
+            if (data && data.length > 0) {
+              const matchedCompany = data.find((c: Company) => c.fnr === fnrParam) || data[0];
+              setSelectedCompany(matchedCompany);
+              setIsDrawerOpen(true);
+            }
+          }
+        } catch (err) {
+          console.error("Error loading direct link company:", err);
+        }
+      };
+
+      fetchDirectCompany();
+    }
+  }, []);
 
   // Load auth state and favorites on mount
   useEffect(() => {
@@ -339,8 +374,12 @@ export default function Home() {
       {/* Slide-in Document Drawer */}
       <DocDrawer 
         isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
+        onClose={() => {
+          setIsDrawerOpen(false);
+          setHighlightedDocKey(null);
+        }}
         company={selectedCompany}
+        highlightDocKey={highlightedDocKey}
       />
 
       {/* Auth Modal Overlay */}

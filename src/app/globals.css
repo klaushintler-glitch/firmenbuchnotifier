@@ -976,3 +976,22 @@ input, select, textarea {
   background-color: var(--primary-color);
   color: #fff;
 }
+
+/* Highlighted document card in Drawer (Direct Link) */
+.doc-card.highlighted {
+  border: 2px solid var(--primary-color);
+  background-color: rgba(24, 119, 242, 0.05);
+  animation: docPulse 2s infinite ease-in-out;
+}
+
+@keyframes docPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(24, 119, 242, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(24, 119, 242, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(24, 119, 242, 0);
+  }
+}

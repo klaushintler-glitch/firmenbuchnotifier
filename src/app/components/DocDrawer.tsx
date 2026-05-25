@@ -7,9 +7,10 @@ interface DocDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   company: Company | null;
+  highlightDocKey?: string | null;
 }
 
-export default function DocDrawer({ isOpen, onClose, company }: DocDrawerProps) {
+export default function DocDrawer({ isOpen, onClose, company, highlightDocKey }: DocDrawerProps) {
   const [documents, setDocuments] = useState<DocumentInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -122,7 +123,10 @@ export default function DocDrawer({ isOpen, onClose, company }: DocDrawerProps) 
           {!loading && !error && documents.length > 0 && (
             <div className="doc-list">
               {documents.map((doc) => (
-                <div key={doc.key} className="doc-card">
+                <div 
+                  key={doc.key} 
+                  className={`doc-card ${highlightDocKey === doc.key ? 'highlighted' : ''}`}
+                >
                   <div className="doc-card-icon">
                     <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
                       <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
