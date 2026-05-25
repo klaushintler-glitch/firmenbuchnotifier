@@ -297,7 +297,7 @@ export default function Home() {
             </div>
           ) : (
             <button onClick={() => setIsAuthModalOpen(true)} className="action-btn btn-primary">
-              Einloggen
+              Einloggen/Registrieren
             </button>
           )}
         </div>
@@ -308,16 +308,9 @@ export default function Home() {
         {/* Grid Content */}
         <main className="main-content">
           <h2 className="content-title">
-            {showFavoritesOnly ? (
-              'Meine favorisierten Firmen'
-            ) : (
-              <>
-                Firmenbuch-Einträge
-                <span className="content-subtitle-main" style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: 'var(--text-secondary)', marginTop: '4px' }}>
-                  Österreichische Firmenbucheinträge suchen und sich bei Änderungen benachrichtigen lassen
-                </span>
-              </>
-            )}
+            {showFavoritesOnly 
+              ? 'Meine favorisierten Firmen' 
+              : 'Österreichische Firmenbucheinträge suchen und sich bei Änderungen benachrichtigen lassen'}
           </h2>
 
           {loading && (
