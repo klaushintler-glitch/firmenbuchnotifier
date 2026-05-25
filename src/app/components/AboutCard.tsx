@@ -3,10 +3,6 @@ import React from 'react';
 export default function AboutCard() {
   return (
     <div className="about-card">
-      <div className="avatar-container">
-        <div className="avatar-fallback">FN</div>
-      </div>
-      <h2 className="about-title">Firmenbuch Notifier</h2>
       <p className="about-subtitle">Über das Projekt</p>
       
       <div className="about-divider"></div>
