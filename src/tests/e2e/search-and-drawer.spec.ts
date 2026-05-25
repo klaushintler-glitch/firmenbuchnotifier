@@ -43,7 +43,7 @@ test.describe('Firmenbuch Notifier - Search and Drawer E2E Tests', () => {
     expect(docCount).toBeGreaterThan(0);
 
     // 9. Close the drawer
-    await page.locator('.drawer-close').click();
+    await page.locator('.doc-drawer .drawer-close').click();
     await expect(drawer).not.toHaveClass(/open/);
   });
 });

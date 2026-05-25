@@ -31,6 +31,7 @@ export default function Home() {
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [highlightedDocKey, setHighlightedDocKey] = useState<string | null>(null);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
 
   // Check for direct-link URL parameters on mount
   useEffect(() => {
@@ -269,6 +270,13 @@ export default function Home() {
         </div>
 
         <div className="header-actions">
+          <button 
+            className="action-btn btn-secondary"
+            onClick={() => setIsAboutOpen(true)}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+          >
+            ℹ️ About
+          </button>
           {sessionToken && (
             <button 
               className={`action-btn btn-favorites-toggle ${showFavoritesOnly ? 'active' : ''}`}
@@ -297,13 +305,19 @@ export default function Home() {
 
       {/* Main Content Area */}
       <div className="app-container">
-        {/* Sidebar */}
-        <AboutCard />
-
         {/* Grid Content */}
         <main className="main-content">
           <h2 className="content-title">
-            {showFavoritesOnly ? 'Meine favorisierten Firmen' : 'Firmenbuch-Einträge'}
+            {showFavoritesOnly ? (
+              'Meine favorisierten Firmen'
+            ) : (
+              <>
+                Firmenbuch-Einträge
+                <span className="content-subtitle-main" style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: 'var(--text-secondary)', marginTop: '4px' }}>
+                  Österreichische Firmenbucheinträge suchen und sich bei Änderungen benachrichtigen lassen
+                </span>
+              </>
+            )}
           </h2>
 
           {loading && (
@@ -396,6 +410,12 @@ export default function Home() {
         }}
         company={selectedCompany}
         highlightDocKey={highlightedDocKey}
+      />
+
+      {/* About Drawer */}
+      <AboutCard 
+        isOpen={isAboutOpen}
+        onClose={() => setIsAboutOpen(false)}
       />
 
       {/* Auth Modal Overlay */}

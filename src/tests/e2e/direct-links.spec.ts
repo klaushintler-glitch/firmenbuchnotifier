@@ -26,7 +26,7 @@ test.describe('Firmenbuch Notifier - Direct Document Links E2E Tests', () => {
     await expect(highlightedCard.locator('.doc-card-title')).toHaveText('Gesellschaftsvertrag');
 
     // 6. Close the drawer
-    await page.locator('.drawer-close').click();
+    await page.locator('.doc-drawer .drawer-close').click();
     await expect(drawer).not.toHaveClass(/open/);
     
     // 7. Verify the highlighted state was reset on close
