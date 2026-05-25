@@ -11,7 +11,8 @@
     "cron-check": "npx tsx src/bin/cron-check.ts",
     "test:api": "npx tsx src/tests/test_api_client.ts",
     "test:cron": "npx tsx src/tests/test_cron.ts",
-    "test": "npm run test:api && npm run test:cron"
+    "test": "npm run test:api && npm run test:cron",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.43.0",
@@ -23,6 +24,7 @@
     "resend": "^3.2.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
