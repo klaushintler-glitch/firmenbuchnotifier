@@ -1017,3 +1017,60 @@ input, select, textarea {
 .about-drawer.open {
   transform: translateX(0);
 }
+
+/* Footer Styles */
+.app-footer {
+  margin-top: 40px;
+  padding: 24px 16px;
+  border-top: 1px solid var(--border-color);
+  width: 100%;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.footer-link-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  transition: color var(--transition-speed) ease;
+  text-decoration: none;
+}
+
+.footer-link-btn:hover {
+  color: var(--primary-color);
+}
+
+.footer-separator {
+  color: var(--border-color);
+  font-size: 10px;
+}
+
+@media (max-width: 600px) {
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
+    justify-content: center;
+  }
+}
+

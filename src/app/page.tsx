@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import AboutCard from './components/AboutCard';
 import AuthModal from './components/AuthModal';
 import DocDrawer from './components/DocDrawer';
+import InfoModal from './components/InfoModal';
 import { Company } from '@/services/firmenbuchService';
 
 interface Favorite {
@@ -32,6 +33,15 @@ export default function Home() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [highlightedDocKey, setHighlightedDocKey] = useState<string | null>(null);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+
+  // Info Modal state (Impressum / Privacy)
+  const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
+  const [infoModalType, setInfoModalType] = useState<'impressum' | 'privacy'>('impressum');
+
+  const openInfoModal = (type: 'impressum' | 'privacy') => {
+    setInfoModalType(type);
+    setIsInfoModalOpen(true);
+  };
 
   // Check for direct-link URL parameters on mount
   useEffect(() => {
@@ -416,6 +426,25 @@ export default function Home() {
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         onAuthSuccess={handleAuthSuccess}
+      />
+
+      {/* Footer */}
+      <footer className="app-footer">
+        <div className="footer-content">
+          <span>&copy; {new Date().getFullYear()} FirmenbuchNotifier</span>
+          <span className="footer-links">
+            <button onClick={() => openInfoModal('impressum')} className="footer-link-btn">Impressum</button>
+            <span className="footer-separator">&bull;</span>
+            <button onClick={() => openInfoModal('privacy')} className="footer-link-btn">Datenschutzerklärung</button>
+          </span>
+        </div>
+      </footer>
+
+      {/* Info Modal (Impressum / Datenschutzerklärung) */}
+      <InfoModal 
+        isOpen={isInfoModalOpen}
+        onClose={() => setIsInfoModalOpen(false)}
+        type={infoModalType}
       />
     </div>
   );
