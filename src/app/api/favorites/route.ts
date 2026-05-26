@@ -36,11 +36,28 @@ export async function GET(request: Request) {
 
     if (error) throw error;
 
-    // Map company_fn from DB to fnr for frontend compatibility
-    const mapped = (data || []).map((item: any) => ({
-      ...item,
-      fnr: item.company_fn
-    }));
+    let docs: any[] = [];
+    if (data && data.length > 0) {
+      const fnrs = data.map((f: any) => f.company_fn);
+      const { data: docsData, error: docsError } = await supabaseAdmin
+        .from('tracked_documents')
+        .select('fnr, document_name')
+        .in('fnr', fnrs);
+      
+      if (!docsError && docsData) {
+        docs = docsData;
+      }
+    }
+
+    // Map company_fn from DB to fnr and attach tracked documents
+    const mapped = (data || []).map((item: any) => {
+      const companyDocs = docs.filter((d: any) => d.fnr === item.company_fn);
+      return {
+        ...item,
+        fnr: item.company_fn,
+        tracked_documents: companyDocs.map((d: any) => ({ document_name: d.document_name }))
+      };
+    });
 
     return NextResponse.json(mapped);
   } catch (error: any) {
@@ -60,7 +77,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { fnr, company_name } = body;
+    const { fnr, company_name, status, gericht } = body;
 
     if (!fnr || !company_name) {
       return NextResponse.json({ error: 'FNR und Firmenname sind erforderlich' }, { status: 400 });
@@ -111,19 +128,49 @@ export async function POST(request: Request) {
     }
 
     // 4. Insert new favorite using company_fn instead of fnr
-    const { data, error } = await supabaseAdmin
-      .from('favorites')
-      .insert({
-        user_id: userId,
-        company_fn: fnr,
-        company_name
-      })
-      .select()
-      .single();
+    const insertObj: any = {
+      user_id: userId,
+      company_fn: fnr,
+      company_name: company_name
+    };
 
-    if (error) throw error;
+    let insertData: any = null;
+    let insertError: any = null;
 
-    const mappedData = data ? { ...data, fnr: data.company_fn } : null;
+    try {
+      const { data, error } = await supabaseAdmin
+        .from('favorites')
+        .insert({
+          ...insertObj,
+          status: status || 'aktiv',
+          gericht: gericht || ''
+        })
+        .select()
+        .single();
+      
+      insertData = data;
+      insertError = error;
+    } catch (e) {
+      insertError = e;
+    }
+
+    if (insertError) {
+      // Code 42703 is Column does not exist in PostgREST/PostgreSQL
+      if (insertError.code === '42703') {
+        const { data: fallbackData, error: fallbackError } = await supabaseAdmin
+          .from('favorites')
+          .insert(insertObj)
+          .select()
+          .single();
+        
+        if (fallbackError) throw fallbackError;
+        insertData = fallbackData;
+      } else {
+        throw insertError;
+      }
+    }
+
+    const mappedData = insertData ? { ...insertData, fnr: insertData.company_fn } : null;
     return NextResponse.json({ success: true, data: mappedData });
   } catch (error: any) {
     console.error("POST favorite error:", error);

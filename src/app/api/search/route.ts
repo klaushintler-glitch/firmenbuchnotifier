@@ -50,7 +50,9 @@ export async function GET(request: Request) {
         rechtsform: {
           code: 'Firma',
           text: 'Firmenbuch-Eintrag'
-        }
+        },
+        status: 'aktiv',
+        gericht: 'Handelsgericht Wien'
       }];
     }
 

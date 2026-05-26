@@ -61,6 +61,37 @@ export default function DocDrawer({ isOpen, onClose, company, highlightDocKey }:
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   };
 
+  const getFilingDelayText = (doc: DocumentInfo) => {
+    if (!doc.dokumentart || !doc.dokumentart.toLowerCase().includes('jahresabschluss')) return null;
+    if (!doc.stichtag || !doc.eingereicht) return null;
+
+    try {
+      const parseDate = (dStr: string) => {
+        const parts = dStr.split('-');
+        if (parts.length >= 2) {
+          return { year: parseInt(parts[0], 10), month: parseInt(parts[1], 10) };
+        }
+        const d = new Date(dStr);
+        if (!isNaN(d.getTime())) {
+          return { year: d.getFullYear(), month: d.getMonth() + 1 };
+        }
+        return null;
+      };
+
+      const s = parseDate(doc.stichtag);
+      const e = parseDate(doc.eingereicht);
+      if (!s || !e) return null;
+
+      const diffMonths = (e.year - s.year) * 12 + (e.month - s.month);
+      if (diffMonths <= 0) return null;
+
+      return `Eingereicht nach ${diffMonths} ${diffMonths === 1 ? 'Monat' : 'Monaten'}`;
+    } catch (e) {
+      console.error("Error calculating filing delay:", e);
+      return null;
+    }
+  };
+
   return (
     <>
       {/* Drawer Overlay */}
@@ -81,7 +112,14 @@ export default function DocDrawer({ isOpen, onClose, company, highlightDocKey }:
           {company && (
             <div className="drawer-title-section">
               <span className="drawer-badge">{company.rechtsform.code}</span>
-              <h2 className="drawer-company-name">{company.name}</h2>
+              <div className="drawer-company-name-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '4px' }}>
+                <h2 className="drawer-company-name" style={{ margin: 0 }}>{company.name}</h2>
+                {company.status && (
+                  <span className={`status-badge ${company.status.toLowerCase()}`} style={{ marginLeft: 0 }}>
+                    {company.status.toLowerCase() === 'aktiv' ? 'Aktiv' : company.status.toLowerCase() === 'gelöscht' ? 'Gelöscht' : company.status}
+                  </span>
+                )}
+              </div>
               <div className="drawer-meta-grid">
                 <div>
                   <strong>FNR:</strong> {company.fnr}
@@ -140,6 +178,12 @@ export default function DocDrawer({ isOpen, onClose, company, highlightDocKey }:
                       <span>{doc.eingereicht}</span>
                       <span>•</span>
                       <span className="doc-size-badge">{formatSize(doc.groesse)}</span>
+                      {getFilingDelayText(doc) && (
+                        <>
+                          <span>•</span>
+                          <span className="filing-delay-badge">{getFilingDelayText(doc)}</span>
+                        </>
+                      )}
                     </div>
                   </div>
                   <button 

@@ -14,6 +14,9 @@ interface Favorite {
   fnr: string;
   company_name: string;
   email_notifications?: boolean;
+  status?: string;
+  gericht?: string;
+  tracked_documents?: { document_name: string }[];
   created_at: string;
 }
 
@@ -174,6 +177,46 @@ export default function Home() {
     return fav ? fav.email_notifications !== false : false;
   };
 
+  const renderDocStats = (companyFnr: string) => {
+    const fav = favorites.find(f => f.fnr === companyFnr);
+    if (!fav || !fav.tracked_documents || fav.tracked_documents.length === 0) {
+      return null;
+    }
+
+    const total = fav.tracked_documents.length;
+    const annualReports = fav.tracked_documents.filter(d => 
+      d.document_name.toLowerCase().includes('jahresabschluss')
+    ).length;
+    const contracts = fav.tracked_documents.filter(d => 
+      d.document_name.toLowerCase().includes('vertrag')
+    ).length;
+
+    const parts: string[] = [];
+    if (annualReports > 0) {
+      parts.push(`${annualReports} ${annualReports === 1 ? 'Jahresabschluss' : 'Jahresabschlüsse'}`);
+    }
+    if (contracts > 0) {
+      parts.push(`${contracts} ${contracts === 1 ? 'Vertrag' : 'Verträge'}`);
+    }
+    const otherCount = total - annualReports - contracts;
+    if (otherCount > 0) {
+      parts.push(`${otherCount} sonstige${otherCount === 1 ? 's' : ''}`);
+    }
+
+    const statsDetail = parts.length > 0 ? ` (${parts.join(', ')})` : '';
+
+    return (
+      <div className="card-doc-stats">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style={{ marginRight: '6px', flexShrink: 0, opacity: 0.8 }}>
+          <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+        </svg>
+        <span>
+          <strong>{total}</strong> {total === 1 ? 'Dokument' : 'Dokumente'}{statsDetail}
+        </span>
+      </div>
+    );
+  };
+
   const handleToggleEmailNotifications = async (e: React.SyntheticEvent, company: Company) => {
     e.stopPropagation(); // Avoid opening the document drawer
     
@@ -199,7 +242,9 @@ export default function Home() {
           },
           body: JSON.stringify({
             fnr: company.fnr,
-            company_name: company.name
+            company_name: company.name,
+            status: company.status,
+            gericht: company.gericht
           })
         });
 
@@ -286,7 +331,9 @@ export default function Home() {
           },
           body: JSON.stringify({
             fnr: company.fnr,
-            company_name: company.name
+            company_name: company.name,
+            status: company.status,
+            gericht: company.gericht
           })
         });
 
@@ -318,11 +365,13 @@ export default function Home() {
         return fullCompany || {
           fnr: fav.fnr,
           name: fav.company_name,
-          sitz: 'Österreich',
+          sitz: fav.gericht || 'Österreich',
           rechtsform: {
             code: 'Firma',
             text: 'Favorisiertes Unternehmen'
-          }
+          },
+          status: fav.status || 'aktiv',
+          gericht: fav.gericht || ''
         };
       })
     : results;
@@ -483,7 +532,14 @@ export default function Home() {
                       </button>
                     </div>
 
-                    <h3 className="company-card-name">{company.name}</h3>
+                     <div className="card-title-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                      <h3 className="company-card-name" style={{ margin: 0 }}>{company.name}</h3>
+                      {company.status && (
+                        <span className={`status-badge ${company.status.toLowerCase()}`} style={{ marginLeft: 0 }}>
+                          {company.status.toLowerCase() === 'aktiv' ? 'Aktiv' : company.status.toLowerCase() === 'gelöscht' ? 'Gelöscht' : company.status}
+                        </span>
+                      )}
+                    </div>
 
                     <div className="card-meta-row">
                       <div className="card-meta-item">
@@ -499,6 +555,8 @@ export default function Home() {
                         <span>{company.rechtsform.text}</span>
                       </div>
                     </div>
+
+                    {isFavorited(company.fnr) && renderDocStats(company.fnr)}
 
                     <div className="card-action-bar" onClick={(e) => e.stopPropagation()}>
                       <div className="email-toggle-row">

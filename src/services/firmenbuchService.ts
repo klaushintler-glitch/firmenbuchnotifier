@@ -6,6 +6,8 @@ export interface Company {
     code: string;
     text: string;
   };
+  status?: string;
+  gericht?: string;
 }
 
 export interface DocumentInfo {
@@ -15,6 +17,7 @@ export interface DocumentInfo {
   dokumentart: string;
   groesse: number;
   eingereicht: string;
+  stichtag?: string;
 }
 
 export interface DocumentDownload {
@@ -88,12 +91,12 @@ function mapRechtsform(str: string) {
 function getMockCompaniesFallback(query: string): Company[] {
   const q = (query || '').toLowerCase().trim();
   const allMocks: Company[] = [
-    { fnr: "123456a", name: "Mayer Bau GmbH", sitz: "Wien", rechtsform: { code: "GmbH", text: "Gesellschaft mit beschränkter Haftung" } },
-    { fnr: "234567b", name: "Elektro Mayer OEG", sitz: "Graz", rechtsform: { code: "OG", text: "Offene Gesellschaft" } },
-    { fnr: "345678c", name: "Mayer & Partner KG", sitz: "Linz", rechtsform: { code: "KG", text: "Kommanditgesellschaft" } },
-    { fnr: "456789d", name: "Alpine Tech GmbH", sitz: "Innsbruck", rechtsform: { code: "GmbH", text: "Gesellschaft mit beschränkter Haftung" } },
-    { fnr: "567890e", name: "Vienna CyberTech OG", sitz: "Wien", rechtsform: { code: "OG", text: "Offene Gesellschaft" } },
-    { fnr: "678901f", name: "DeepMind Austria GmbH", sitz: "Salzburg", rechtsform: { code: "GmbH", text: "Gesellschaft mit beschränkter Haftung" } }
+    { fnr: "123456a", name: "Mayer Bau GmbH", sitz: "Wien", rechtsform: { code: "GmbH", text: "Gesellschaft mit beschränkter Haftung" }, status: "aktiv", gericht: "Handelsgericht Wien" },
+    { fnr: "234567b", name: "Elektro Mayer OEG", sitz: "Graz", rechtsform: { code: "OG", text: "Offene Gesellschaft" }, status: "aktiv", gericht: "Landesgericht für ZRS Graz" },
+    { fnr: "345678c", name: "Mayer & Partner KG", sitz: "Linz", rechtsform: { code: "KG", text: "Kommanditgesellschaft" }, status: "gelöscht", gericht: "Landesgericht Linz" },
+    { fnr: "456789d", name: "Alpine Tech GmbH", sitz: "Innsbruck", rechtsform: { code: "GmbH", text: "Gesellschaft mit beschränkter Haftung" }, status: "aktiv", gericht: "Landesgericht Innsbruck" },
+    { fnr: "567890e", name: "Vienna CyberTech OG", sitz: "Wien", rechtsform: { code: "OG", text: "Offene Gesellschaft" }, status: "aktiv", gericht: "Handelsgericht Wien" },
+    { fnr: "678901f", name: "DeepMind Austria GmbH", sitz: "Salzburg", rechtsform: { code: "GmbH", text: "Gesellschaft mit beschränkter Haftung" }, status: "aktiv", gericht: "Landesgericht Salzburg" }
   ];
 
   if (!q) return allMocks;
@@ -112,7 +115,8 @@ function getMockDocuments(fnr: string): DocumentInfo[] {
       az: "001 Fr 100/24",
       dokumentart: "Jahresabschluss",
       groesse: 24531,
-      eingereicht: "2025-05-15"
+      eingereicht: "2025-05-15",
+      stichtag: "2024-12-31"
     },
     {
       key: `${cleanFnr}_doc_2_gesellschafterbeschluss_2023`,
@@ -160,7 +164,9 @@ export async function searchCompany(wortlaut: string, exact = false): Promise<Co
             fnr: item.fnr,
             name: item.name,
             sitz: item.sitz || item.city || '',
-            rechtsform: mapRechtsform(item.rechtsform || '')
+            rechtsform: mapRechtsform(item.rechtsform || ''),
+            status: item.status || '',
+            gericht: item.gericht || ''
           }));
         }
       }
@@ -189,7 +195,9 @@ export async function searchCompany(wortlaut: string, exact = false): Promise<Co
       fnr: item.fnr,
       name: item.name,
       sitz: item.sitz || item.city || item.address?.seat || '',
-      rechtsform: mapRechtsform(item.rechtsform || '')
+      rechtsform: mapRechtsform(item.rechtsform || ''),
+      status: item.status || '',
+      gericht: item.gericht || ''
     }));
   } catch (error) {
     console.error("[FirmaFind API] Search error:", error);
@@ -237,7 +245,8 @@ export async function getCompanyDocuments(fnr: string): Promise<DocumentInfo[]> 
       az: item.az,
       dokumentart: item.dokumentart?.text || item.dokumentart?.code || 'Dokument',
       groesse: item.groesse || 0,
-      eingereicht: item.eingereicht || ''
+      eingereicht: item.eingereicht || '',
+      stichtag: item.stichtag || item.metadaten?.stichtag || ''
     }));
 
     // Sort by submission date (eingereicht) descending (newest first)

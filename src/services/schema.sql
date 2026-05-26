@@ -38,6 +38,8 @@ CREATE TABLE IF NOT EXISTS public.favorites (
     fnr TEXT NOT NULL,
     company_name TEXT NOT NULL,
     email_notifications BOOLEAN NOT NULL DEFAULT TRUE,
+    status TEXT DEFAULT 'aktiv',
+    gericht TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     CONSTRAINT unique_user_favorite UNIQUE (user_id, fnr)
 );
@@ -81,3 +83,12 @@ CREATE TABLE IF NOT EXISTS public.tracked_documents (
 -- Indexes for efficient queries
 CREATE INDEX IF NOT EXISTS idx_favorites_fnr ON public.favorites(fnr);
 CREATE INDEX IF NOT EXISTS idx_tracked_docs_fnr ON public.tracked_documents(fnr);
+
+-- ==========================================================
+-- SCHEMA UPDATE MIGRATIONS (For existing setups)
+-- ==========================================================
+
+-- Run these statements in the Supabase SQL Editor if you are upgrading from an older version:
+-- ALTER TABLE public.favorites ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'aktiv';
+-- ALTER TABLE public.favorites ADD COLUMN IF NOT EXISTS gericht TEXT;
+
