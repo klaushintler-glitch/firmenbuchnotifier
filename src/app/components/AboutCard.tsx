@@ -32,7 +32,7 @@ export default function AboutCard({ isOpen, onClose }: AboutCardProps) {
           </p>
 
           <p className="about-text text-highlight">
-            Die Nutzung der Webseite gratis. 
+            Die Nutzung der Webseite ist gratis. 
           </p>
 
           <div className="about-divider"></div>
