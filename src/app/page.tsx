@@ -239,18 +239,52 @@ export default function Home() {
     <div>
       {/* App Header */}
       <header className="app-header">
-        <div className="logo-section">
-          <img 
-            src="/logo.png" 
-            alt="Logo" 
-            style={{ 
-              height: '40px', 
-              width: 'auto', 
-              maxHeight: '44px',
-              objectFit: 'contain' 
-            }} 
-          />
-          <h1 className="logo-text">FirmenbuchNotifier</h1>
+        <div className="header-top-row">
+          <div className="logo-section">
+            <img 
+              src="/logo.png" 
+              alt="Logo" 
+              style={{ 
+                height: '40px', 
+                width: 'auto', 
+                maxHeight: '44px',
+                objectFit: 'contain' 
+              }} 
+            />
+            <h1 className="logo-text">FirmenbuchNotifier</h1>
+          </div>
+
+          <div className="header-actions">
+            <button 
+              className="action-btn btn-secondary"
+              onClick={() => setIsAboutOpen(true)}
+            >
+              Über
+            </button>
+            {sessionToken && (
+              <button 
+                className={`action-btn btn-favorites-toggle ${showFavoritesOnly ? 'active' : ''}`}
+                onClick={() => {
+                  setShowFavoritesOnly(!showFavoritesOnly);
+                }}
+              >
+                ❤️ Favoriten ({favorites.length}/10)
+              </button>
+            )}
+
+            {sessionToken ? (
+              <div className="user-badge">
+                <span className="user-email-text" style={{ color: 'var(--text-secondary)' }}>{user?.email}</span>
+                <button onClick={handleLogout} className="action-btn btn-secondary">
+                  Abmelden
+                </button>
+              </div>
+            ) : (
+              <button onClick={() => setIsAuthModalOpen(true)} className="action-btn btn-primary">
+                Einloggen/Registrieren
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="search-container">
@@ -277,38 +311,6 @@ export default function Home() {
               style={{ opacity: showFavoritesOnly ? 0.6 : 1 }}
             />
           </div>
-        </div>
-
-        <div className="header-actions">
-          <button 
-            className="action-btn btn-secondary"
-            onClick={() => setIsAboutOpen(true)}
-          >
-            Über
-          </button>
-          {sessionToken && (
-            <button 
-              className={`action-btn btn-favorites-toggle ${showFavoritesOnly ? 'active' : ''}`}
-              onClick={() => {
-                setShowFavoritesOnly(!showFavoritesOnly);
-              }}
-            >
-              ❤️ Favoriten ({favorites.length}/10)
-            </button>
-          )}
-
-          {sessionToken ? (
-            <div className="user-badge">
-              <span style={{ color: 'var(--text-secondary)' }}>{user?.email}</span>
-              <button onClick={handleLogout} className="action-btn btn-secondary">
-                Abmelden
-              </button>
-            </div>
-          ) : (
-            <button onClick={() => setIsAuthModalOpen(true)} className="action-btn btn-primary">
-              Einloggen/Registrieren
-            </button>
-          )}
         </div>
       </header>
 
