@@ -272,9 +272,12 @@ export default function Home() {
               className="search-input" 
               placeholder="Suchen nach Firmennamen, Ort oder FNR..." 
               value={query}
-              onChange={e => setQuery(e.target.value)}
-              disabled={showFavoritesOnly}
-              style={{ opacity: showFavoritesOnly ? 0.6 : 1 }}
+              onChange={e => {
+                setQuery(e.target.value);
+                if (showFavoritesOnly) {
+                  setShowFavoritesOnly(false);
+                }
+              }}
             />
           </div>
         </div>
