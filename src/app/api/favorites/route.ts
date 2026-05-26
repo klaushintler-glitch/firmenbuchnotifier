@@ -161,3 +161,38 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }
 }
+
+/**
+ * PATCH: Update favorite settings (e.g. email notifications on/off)
+ */
+export async function PATCH(request: Request) {
+  const userId = await getUserIdFromRequest(request);
+  if (!userId) {
+    return NextResponse.json({ error: 'Nicht autorisiert' }, { status: 401 });
+  }
+
+  try {
+    const body = await request.json();
+    const { fnr, email_notifications } = body;
+
+    if (!fnr || email_notifications === undefined) {
+      return NextResponse.json({ error: 'FNR und email_notifications sind erforderlich' }, { status: 400 });
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('favorites')
+      .update({ email_notifications })
+      .eq('user_id', userId)
+      .eq('company_fn', fnr)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    const mappedData = data ? { ...data, fnr: data.company_fn } : null;
+    return NextResponse.json({ success: true, data: mappedData });
+  } catch (error: any) {
+    console.error("PATCH favorite error:", error);
+    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+  }
+}

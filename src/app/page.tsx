@@ -13,6 +13,7 @@ interface Favorite {
   user_id: string;
   fnr: string;
   company_name: string;
+  email_notifications?: boolean;
   created_at: string;
 }
 
@@ -166,6 +167,84 @@ export default function Home() {
 
   const isFavorited = (fnr: string) => {
     return favorites.some(fav => fav.fnr === fnr);
+  };
+
+  const isEmailNotificationsOn = (fnr: string) => {
+    const fav = favorites.find(f => f.fnr === fnr);
+    return fav ? fav.email_notifications !== false : false;
+  };
+
+  const handleToggleEmailNotifications = async (e: React.SyntheticEvent, company: Company) => {
+    e.stopPropagation(); // Avoid opening the document drawer
+    
+    if (!sessionToken) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+
+    const alreadyFav = isFavorited(company.fnr);
+
+    if (!alreadyFav) {
+      if (favorites.length >= 10) {
+        alert('Sie haben das Limit von 10 favorisierten Firmen erreicht. Bitte entfernen Sie eine Firma, um eine neue hinzufügen zu können.');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/favorites', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionToken}`
+          },
+          body: JSON.stringify({
+            fnr: company.fnr,
+            company_name: company.name
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            fetchFavorites(sessionToken);
+          }
+        } else {
+          const errData = await response.json();
+          alert(errData.error || 'Fehler beim Favorisieren der Firma');
+        }
+      } catch (err: any) {
+        alert(err.message);
+      }
+      return;
+    }
+
+    const currentStatus = isEmailNotificationsOn(company.fnr);
+    const newStatus = !currentStatus;
+
+    try {
+      const response = await fetch('/api/favorites', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionToken}`
+        },
+        body: JSON.stringify({
+          fnr: company.fnr,
+          email_notifications: newStatus
+        })
+      });
+
+      if (response.ok) {
+        setFavorites(favorites.map(fav => 
+          fav.fnr === company.fnr ? { ...fav, email_notifications: newStatus } : fav
+        ));
+      } else {
+        const errData = await response.json();
+        alert(errData.error || 'Fehler beim Ändern der E-Mail-Einstellungen');
+      }
+    } catch (err: any) {
+      alert(err.message);
+    }
   };
 
   const handleToggleFavorite = async (e: React.MouseEvent, company: Company) => {
@@ -421,13 +500,18 @@ export default function Home() {
                       </div>
                     </div>
 
-                    <div className="card-action-bar">
-                      <span className="card-action-btn">
-                        Dokumente anzeigen
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                          <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
-                        </svg>
-                      </span>
+                    <div className="card-action-bar" onClick={(e) => e.stopPropagation()}>
+                      <div className="email-toggle-row">
+                        <span className="email-toggle-text">E-Mail-Benachrichtigung</span>
+                        <label className="switch">
+                          <input 
+                            type="checkbox" 
+                            checked={isEmailNotificationsOn(company.fnr)}
+                            onChange={(e) => handleToggleEmailNotifications(e, company)}
+                          />
+                          <span className="slider round"></span>
+                        </label>
+                      </div>
                     </div>
                   </div>
                 </div>

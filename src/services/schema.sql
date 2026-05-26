@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS public.favorites (
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     fnr TEXT NOT NULL,
     company_name TEXT NOT NULL,
+    email_notifications BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     CONSTRAINT unique_user_favorite UNIQUE (user_id, fnr)
 );

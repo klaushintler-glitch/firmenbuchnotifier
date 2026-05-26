@@ -73,10 +73,10 @@ async function testCronCheckFlow() {
     if (table === 'favorites') {
       return {
         select: (columns: string) => {
-          if (columns === 'company_fn, company_name, user_id') {
+          if (columns.includes('company_fn')) {
             return {
               data: [
-                { company_fn: '123456a', company_name: 'Mayer Bau GmbH', user_id: 'user_1' }
+                { company_fn: '123456a', company_name: 'Mayer Bau GmbH', user_id: 'user_1', email_notifications: true }
               ],
               error: null
             };

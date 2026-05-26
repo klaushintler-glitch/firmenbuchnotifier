@@ -20,7 +20,7 @@ export async function runCronCheck(): Promise<void> {
     // 1. Get all distinct FNRs favorited by users
     const { data: favorites, error: favsError } = await supabaseAdmin
       .from('favorites')
-      .select('company_fn, company_name, user_id');
+      .select('company_fn, company_name, user_id, email_notifications');
 
     if (favsError) {
       throw new Error(`Failed to fetch favorites: ${favsError.message}`);
@@ -32,13 +32,16 @@ export async function runCronCheck(): Promise<void> {
     }
 
     // Map favorites by FNR for easy lookup
-    const fnrMap = new Map<string, { company_name: string; user_ids: string[] }>();
+    const fnrMap = new Map<string, { company_name: string; users: { user_id: string; email_notifications: boolean }[] }>();
     favorites.forEach(f => {
       const fnr = (f as any).company_fn;
       if (!fnrMap.has(fnr)) {
-        fnrMap.set(fnr, { company_name: f.company_name, user_ids: [] });
+        fnrMap.set(fnr, { company_name: f.company_name, users: [] });
       }
-      fnrMap.get(fnr)!.user_ids.push(f.user_id);
+      fnrMap.get(fnr)!.users.push({
+        user_id: f.user_id,
+        email_notifications: (f as any).email_notifications !== false // default to true
+      });
     });
 
     const uniqueFnrs = Array.from(fnrMap.keys());
@@ -80,7 +83,8 @@ export async function runCronCheck(): Promise<void> {
             });
 
             // Find all users favoriting this FNR and fetch their profiles
-            const userIds = companyInfo.user_ids;
+            const users = companyInfo.users;
+            const userIds = users.map(u => u.user_id);
             const { data: profiles, error: profilesError } = await supabaseAdmin
               .from('profiles')
               .select('id, email')
@@ -92,12 +96,17 @@ export async function runCronCheck(): Promise<void> {
             }
 
             profiles?.forEach(profile => {
-              notificationsToSend.push({
-                userEmail: profile.email,
-                companyName: companyInfo.company_name,
-                fnr: fnr,
-                doc: doc
-              });
+              const userPref = users.find(u => u.user_id === profile.id);
+              if (userPref && userPref.email_notifications) {
+                notificationsToSend.push({
+                  userEmail: profile.email,
+                  companyName: companyInfo.company_name,
+                  fnr: fnr,
+                  doc: doc
+                });
+              } else {
+                console.log(`[Cron Job] Skipping email notification for user ${profile.email} (FNR: ${fnr}) because notifications are disabled.`);
+              }
             });
           }
         }
