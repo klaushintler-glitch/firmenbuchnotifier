@@ -5,6 +5,7 @@ import AboutCard from './components/AboutCard';
 import AuthModal from './components/AuthModal';
 import DocDrawer from './components/DocDrawer';
 import InfoModal from './components/InfoModal';
+import ResetPasswordModal from './components/ResetPasswordModal';
 import { Company } from '@/services/firmenbuchService';
 
 interface Favorite {
@@ -38,6 +39,10 @@ export default function Home() {
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [infoModalType, setInfoModalType] = useState<'impressum' | 'privacy'>('impressum');
 
+  // Reset password state
+  const [resetPasswordToken, setResetPasswordToken] = useState<string | null>(null);
+  const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] = useState(false);
+
   const openInfoModal = (type: 'impressum' | 'privacy') => {
     setInfoModalType(type);
     setIsInfoModalOpen(true);
@@ -50,6 +55,14 @@ export default function Home() {
     const params = new URLSearchParams(window.location.search);
     const fnrParam = params.get('fnr');
     const docParam = params.get('doc');
+    const resetTokenParam = params.get('reset_token');
+
+    if (resetTokenParam) {
+      setResetPasswordToken(resetTokenParam);
+      setIsResetPasswordModalOpen(true);
+      // Clean URL parameters for a cleaner experience
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
 
     if (fnrParam) {
       setQuery(fnrParam);
@@ -465,6 +478,13 @@ export default function Home() {
         isOpen={isInfoModalOpen}
         onClose={() => setIsInfoModalOpen(false)}
         type={infoModalType}
+      />
+
+      {/* Reset Password Modal */}
+      <ResetPasswordModal 
+        isOpen={isResetPasswordModalOpen}
+        onClose={() => setIsResetPasswordModalOpen(false)}
+        token={resetPasswordToken || ''}
       />
     </div>
   );

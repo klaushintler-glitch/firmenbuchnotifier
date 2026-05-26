@@ -10,6 +10,7 @@ interface AuthModalProps {
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -23,6 +24,29 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
     setError('');
     setSuccess('');
     setLoading(true);
+
+    if (isForgotPassword) {
+      try {
+        const response = await fetch('/api/auth/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'request', email }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Es ist ein Fehler aufgetreten');
+        }
+
+        setSuccess('Ein Link zum Zurücksetzen des Passworts wurde an Ihre E-Mail gesendet.');
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
 
     const endpoint = isSignUp ? '/api/auth/signup' : '/api/auth/login';
 
@@ -73,20 +97,27 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
       <div className="modal-card auth-modal" onClick={e => e.stopPropagation()}>
         <button className="modal-close" onClick={onClose}>&times;</button>
         
-        <div className="auth-tabs">
-          <button 
-            className={`auth-tab ${!isSignUp ? 'active' : ''}`} 
-            onClick={() => { setIsSignUp(false); setError(''); setSuccess(''); }}
-          >
-            Einloggen
-          </button>
-          <button 
-            className={`auth-tab ${isSignUp ? 'active' : ''}`} 
-            onClick={() => { setIsSignUp(true); setError(''); setSuccess(''); }}
-          >
-            Registrieren
-          </button>
-        </div>
+        {isForgotPassword ? (
+          <div style={{ padding: '8px 0', textAlign: 'center' }}>
+            <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-main)', marginBottom: '8px' }}>Kennwort vergessen?</h2>
+            <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', marginBottom: '16px' }}>Geben Sie Ihre E-Mail-Adresse ein, um einen Passwort-Reset-Link anzufordern.</p>
+          </div>
+        ) : (
+          <div className="auth-tabs">
+            <button 
+              className={`auth-tab ${!isSignUp ? 'active' : ''}`} 
+              onClick={() => { setIsSignUp(false); setIsForgotPassword(false); setError(''); setSuccess(''); }}
+            >
+              Einloggen
+            </button>
+            <button 
+              className={`auth-tab ${isSignUp ? 'active' : ''}`} 
+              onClick={() => { setIsSignUp(true); setIsForgotPassword(false); setError(''); setSuccess(''); }}
+            >
+              Registrieren
+            </button>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="auth-form">
           {error && <div className="auth-alert alert-error">{error}</div>}
@@ -104,28 +135,66 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="password">Passwort</label>
-            <input 
-              type="password" 
-              id="password" 
-              placeholder="••••••••" 
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required 
-              minLength={6}
-            />
-          </div>
+          {!isForgotPassword && (
+            <div className="form-group">
+              <label htmlFor="password">Passwort</label>
+              <input 
+                type="password" 
+                id="password" 
+                placeholder="••••••••" 
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required 
+                minLength={6}
+              />
+            </div>
+          )}
 
           <button type="submit" className="auth-submit-btn" disabled={loading}>
-            {loading ? <span className="spinner-small"></span> : (isSignUp ? 'Konto erstellen' : 'Anmelden')}
+            {loading ? (
+              <span className="spinner-small"></span>
+            ) : isForgotPassword ? (
+              'Link anfordern'
+            ) : isSignUp ? (
+              'Konto erstellen'
+            ) : (
+              'Anmelden'
+            )}
           </button>
         </form>
 
-        <p className="auth-note">
-          {isSignUp 
-            ? 'Mit der Registrierung stimmen Sie den Benachrichtigungseinstellungen zu. Sie können bis zu 10 Firmen favorisieren.' 
-            : 'Melden Sie sich an, um Ihre Favoriten zu verwalten und E-Mail-Updates zu erhalten.'}
+        <p className="auth-note" style={{ textAlign: 'center' }}>
+          {isForgotPassword ? (
+            <button 
+              type="button" 
+              className="link-btn"
+              onClick={() => { setIsForgotPassword(false); setError(''); setSuccess(''); }}
+              style={{ color: 'var(--primary-color)', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}
+            >
+              Zurück zum Login
+            </button>
+          ) : isSignUp ? (
+            'Mit der Registrierung stimmen Sie den Benachrichtigungseinstellungen zu. Sie können bis zu 10 Firmen favorisieren.'
+          ) : (
+            <>
+              Melden Sie sich an, um Ihre Favoriten zu verwalten und E-Mail-Updates zu erhalten.
+              <button 
+                type="button" 
+                className="link-btn"
+                onClick={() => { setIsForgotPassword(true); setError(''); setSuccess(''); }}
+                style={{ 
+                  display: 'block', 
+                  margin: '8px auto 0 auto', 
+                  color: 'var(--primary-color)', 
+                  fontSize: '13px', 
+                  fontWeight: 500, 
+                  cursor: 'pointer' 
+                }}
+              >
+                Kennwort vergessen?
+              </button>
+            </>
+          )}
         </p>
       </div>
     </div>
