@@ -77,7 +77,7 @@ export default function Home() {
           if (response.ok) {
             const data = await response.json();
             if (data && data.length > 0) {
-              const matchedCompany = data.find((c: Company) => c.fnr === fnrParam) || data[0];
+              const matchedCompany = data.find((c: Company) => c.fnr.toLowerCase().replace(/\s+/g, '') === fnrParam.toLowerCase().replace(/\s+/g, '')) || data[0];
               setSelectedCompany(matchedCompany);
               setIsDrawerOpen(true);
             }
