@@ -283,9 +283,8 @@ export default function Home() {
           <button 
             className="action-btn btn-secondary"
             onClick={() => setIsAboutOpen(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
           >
-            ℹ️ About
+            Über
           </button>
           {sessionToken && (
             <button 
