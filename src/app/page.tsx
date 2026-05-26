@@ -478,6 +478,7 @@ export default function Home() {
         isOpen={isInfoModalOpen}
         onClose={() => setIsInfoModalOpen(false)}
         type={infoModalType}
+        onSwitchType={setInfoModalType}
       />
 
       {/* Reset Password Modal */}

@@ -6,9 +6,10 @@ interface InfoModalProps {
   isOpen: boolean;
   onClose: () => void;
   type: 'impressum' | 'privacy';
+  onSwitchType?: (type: 'impressum' | 'privacy') => void;
 }
 
-export default function InfoModal({ isOpen, onClose, type }: InfoModalProps) {
+export default function InfoModal({ isOpen, onClose, type, onSwitchType }: InfoModalProps) {
   if (!isOpen) return null;
 
   return (
@@ -40,7 +41,16 @@ export default function InfoModal({ isOpen, onClose, type }: InfoModalProps) {
             <div className="info-section" style={{ marginBottom: '24px' }}>
               <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--primary-color)', marginBottom: '8px' }}>3. Datenschutz</h3>
               <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', fontSize: '14px' }}>
-                Die Verarbeitung personenbezogener Daten erfolgt in Übereinstimmung mit der Datenschutz-Grundverordnung (DSGVO) und dem österreichischen Datenschutzgesetz (DSG).
+                Die Verarbeitung personenbezogener Daten erfolgt in Übereinstimmung mit der Datenschutz-Grundverordnung (DSGVO) und dem österreichischen Datenschutzgesetz (DSG). Weitere Informationen finden Sie in unserer {onSwitchType ? (
+                  <button 
+                    onClick={() => onSwitchType('privacy')} 
+                    style={{ color: 'var(--primary-color)', background: 'none', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer', textDecoration: 'underline', fontWeight: 500 }}
+                  >
+                    Datenschutzerklärung
+                  </button>
+                ) : (
+                  'Datenschutzerklärung'
+                )}.
               </p>
             </div>
 
@@ -51,7 +61,7 @@ export default function InfoModal({ isOpen, onClose, type }: InfoModalProps) {
             <div className="info-section" style={{ marginBottom: '20px' }}>
               <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-main)', marginBottom: '6px' }}>1. Keine Haftung für Firmenbuchdaten</h3>
               <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', fontSize: '14px' }}>
-                Die auf dieser Website bereitgestellten Daten aus dem Firmenbuch werden ohne Gewähr angeboten. Der Betreiber übernimmt keine Verantwortung für die Richtigkeit, Vollständigkeit, Aktualität oder Genauigkeit dieser Informationen. Das Firmenbuch wird vom österreichischen Bundesjustizamt geführt. Für verbindliche und aktuelle Informationen besuchen Sie direkt die offizielle Website des Firmenbuchs unter <a href="https://www.firmenbuch.at" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-color)' }}>www.firmenbuch.at</a>.
+                Die auf dieser Website bereitgestellten Daten aus dem Firmenbuch werden ohne Gewähr angeboten. Der Betreiber übernimmt keine Verantwortung für die Richtigkeit, Vollständigkeit, Aktualität oder Genauigkeit dieser Informationen. Das Firmenbuch wird vom Bundesministeriums für Justiz (BMJ) geführt. Für verbindliche und aktuelle Informationen besuchen Sie direkt die offizielle Website des Firmenbuchs unter <a href="https://www.firmenbuch.at" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-color)' }}>www.firmenbuch.at</a>.
               </p>
             </div>
 
@@ -65,28 +75,28 @@ export default function InfoModal({ isOpen, onClose, type }: InfoModalProps) {
             <div className="info-section" style={{ marginBottom: '20px' }}>
               <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-main)', marginBottom: '6px' }}>3. Keine Haftung für externe Links</h3>
               <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', fontSize: '14px' }}>
-                Diese Website kann Links zu anderen Websites enthalten. Der Betreiber ist nicht verantwortlich for den Inhalt dieser Websites und haftet nicht für Schäden, die durch den Zugriff oder die Nutzung dieser Websites entstehen.
+                Diese Website kann Links zu anderen Websites enthalten. Der Betreiber ist nicht verantwortlich für den Inhalt dieser Websites und haftet nicht für Schäden, die durch den Zugriff oder die Nutzung dieser Websites entstehen.
               </p>
             </div>
 
             <div className="info-section" style={{ marginBottom: '20px' }}>
               <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-main)', marginBottom: '6px' }}>4. Beschränkung der Haftung</h3>
               <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', fontSize: '14px' }}>
-                In keinem Fall haften Sie oder der Betreiber für direkte, indirekte, zufällige, spezielle oder Folgeschäden, die sich aus der Nutzung dieser Website ergeben, einschließlich, aber nicht beschränkt auf Datenverlust, Gewinnverlust oder Geschäftsunterbrechung.
+                In keinem Fall haften Sie oder der Betreiber für direkte, indirekte, zufällige, spezielle oder Folgeschäden, die sich aus der Nutzung dieser Website ergeben, einschließlich, aber nicht beschränkt auf Datenverlust, Gewinnverlust oder Geschäftsunterbrechung, auch wenn auf die Möglichkeit solcher Schäden hingewiesen wurde.
               </p>
             </div>
 
             <div className="info-section" style={{ marginBottom: '20px' }}>
               <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-main)', marginBottom: '6px' }}>5. Eigenverantwortung bei der Nutzung</h3>
               <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', fontSize: '14px' }}>
-                Sie nutzen diese Website auf eigenes Risiko. Alle Informationen werden so bereitgestellt, wie sie verfügbar sind.
+                Sie nutzen diese Website auf eigenes Risiko. Alle Informationen werden so bereitgestellt, wie sie verfügbar sind. Der Betreiber leistet keine ausdrücklichen oder stillschweigenden Zusicherungen oder Bedingungen in Bezug auf diese Website oder die enthaltenen Informationen, einschließlich der Gewährleistung der Marktgängigkeit, Eignung für einen bestimmten Zweck oder Nichtverletzung von Rechten.
               </p>
             </div>
 
             <div className="info-section" style={{ marginBottom: '20px' }}>
               <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-main)', marginBottom: '6px' }}>6. Änderungen des Haftungsausschlusses</h3>
               <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', fontSize: '14px' }}>
-                Der Betreiber behält sich das Recht vor, diesen Haftungsausschluss jederzeit zu ändern oder zu ergänzen.
+                Der Betreiber behält sich das Recht vor, diesen Haftungsausschluss jederzeit zu ändern oder zu ergänzen. Die jeweils aktuelle Version ist auf der Website abrufbar.
               </p>
             </div>
 
