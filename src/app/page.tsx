@@ -333,7 +333,7 @@ export default function Home() {
           <h2 className="content-title">
             {showFavoritesOnly 
               ? 'Meine favorisierten Firmen' 
-              : 'Österreichische Firmenbucheinträge suchen und sich bei Änderungen benachrichtigen lassen'}
+              : 'Österreichische Firmendaten recherchieren und Firmenbuchänderungen automatisch überwachen'}
           </h2>
 
           {loading && (
