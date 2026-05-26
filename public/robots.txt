@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://firmenbuchnotifier.vercel.app/sitemap.xml
