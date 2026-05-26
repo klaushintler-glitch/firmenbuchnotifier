@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -16,6 +16,20 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -93,8 +107,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-card auth-modal" onClick={e => e.stopPropagation()}>
+    <div className="modal-overlay">
+      <div className="modal-card auth-modal">
         <button className="modal-close" onClick={onClose}>&times;</button>
         
         {isForgotPassword ? (
