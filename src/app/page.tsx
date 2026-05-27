@@ -52,6 +52,15 @@ export default function Home() {
     setIsInfoModalOpen(true);
   };
 
+  const handleGoHome = () => {
+    setQuery('');
+    setShowFavoritesOnly(false);
+    setIsDrawerOpen(false);
+    setSelectedCompany(null);
+    setHighlightedDocKey(null);
+    performSearch('');
+  };
+
   // Check for direct-link URL parameters on mount
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -380,7 +389,7 @@ export default function Home() {
     <div>
       {/* App Header */}
       <header className="app-header">
-        <div className="logo-section">
+        <div className="logo-section" onClick={handleGoHome}>
           <img 
             src="/logo.png" 
             alt="Logo" 

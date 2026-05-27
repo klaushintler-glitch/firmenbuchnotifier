@@ -121,6 +121,13 @@ input, select, textarea {
   display: flex;
   align-items: center;
   gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  transition: opacity var(--transition-speed) ease;
+}
+
+.logo-section:hover {
+  opacity: 0.85;
 }
 
 .logo-icon {
