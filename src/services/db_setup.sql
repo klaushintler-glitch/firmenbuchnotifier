@@ -39,4 +39,6 @@ CREATE TABLE IF NOT EXISTS public.tracked_documents (
     inserted_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+ALTER TABLE public.tracked_documents ENABLE ROW LEVEL SECURITY;
+
 CREATE INDEX IF NOT EXISTS idx_tracked_docs_fnr ON public.tracked_documents(fnr);

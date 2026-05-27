@@ -80,6 +80,10 @@ CREATE TABLE IF NOT EXISTS public.tracked_documents (
     inserted_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Enable RLS for tracked_documents
+ALTER TABLE public.tracked_documents ENABLE ROW LEVEL SECURITY;
+
+
 -- Indexes for efficient queries
 CREATE INDEX IF NOT EXISTS idx_favorites_fnr ON public.favorites(fnr);
 CREATE INDEX IF NOT EXISTS idx_tracked_docs_fnr ON public.tracked_documents(fnr);
