@@ -446,3 +446,18 @@ Wir haben die Benutzer-Authentifizierung und die Standardansicht für angemeldet
    - Angemeldete Benutzer sehen so sofort ihre überwachten Firmen, anstatt vor einer leeren Suchmaske zu stehen.
 3. **E2E-Tests:**
    - Die Playwright E2E-Tests laufen weiterhin erfolgreich durch.
+
+---
+
+## Release v1.7.3: Bereinigung der Firmenkacheln (Entfernung redundanter Badges)
+
+Wir haben das visuelle Layout der Firmenkacheln im Grid aufgeräumt, um Redundanzen zu minimieren und das Design ruhiger zu gestalten.
+
+### Technische Umsetzung:
+1. **Entfernung des Rechtsform-Badges:**
+   - Das graue Badge in der linken oberen Ecke (das z.B. `"FIRMA"`, `"GMBH"` oder `"OG"` anzeigte) wurde von den Firmenkacheln entfernt.
+   - Da die Rechtsform bereits im Namen der Firma (z.B. `"AVL List GmbH"`) und in den detaillierten Metadaten aufgeführt ist, war dieses Badge redundant.
+2. **Layout-Anpassung:**
+   - Die Schaltfläche für den Favoriten-Status (das blaue Herz) verbleibt wie gewohnt in der rechten oberen Ecke, wofür die Ausrichtung des `.card-top`-Elements auf `justify-content: flex-end` angepasst wurde.
+3. **E2E-Tests:**
+   - Alle automatisierten E2E-Tests sind weiterhin funktionsfähig und laufen erfolgreich durch.
