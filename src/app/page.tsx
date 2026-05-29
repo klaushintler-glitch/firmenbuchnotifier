@@ -560,8 +560,7 @@ export default function Home() {
                   onClick={() => openDrawer(company)}
                 >
                   <div className="company-card">
-                    <div className="card-top">
-                      <span className="card-badge">{company.rechtsform.code}</span>
+                    <div className="card-top" style={{ justifyContent: 'flex-end' }}>
                       <button 
                         className={`card-favorite-btn ${isFavorited(company.fnr) ? 'favorited' : ''}`}
                         onClick={(e) => handleToggleFavorite(e, company)}
