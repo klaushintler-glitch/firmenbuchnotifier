@@ -178,6 +178,7 @@ export default function Home() {
           setSessionToken(data.session.access_token);
           setUser(data.user);
           fetchFavorites(data.session.access_token);
+          setShowFavoritesOnly(true);
           return;
         }
       }
@@ -193,6 +194,7 @@ export default function Home() {
     setSessionToken(token);
     setUser(userData);
     fetchFavorites(token);
+    setShowFavoritesOnly(true);
     setIsAuthModalOpen(false);
   };
 
