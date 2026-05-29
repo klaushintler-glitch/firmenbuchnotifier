@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAuthSuccess: (token: string, user: any) => void;
+  onAuthSuccess: (token: string, refreshToken: string, user: any) => void;
 }
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
@@ -81,8 +81,9 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
         if (data.session) {
           // Auto logged in on signup
           localStorage.setItem('fb_session_token', data.session.access_token);
+          localStorage.setItem('fb_refresh_token', data.session.refresh_token);
           localStorage.setItem('fb_user', JSON.stringify(data.user));
-          onAuthSuccess(data.session.access_token, data.user);
+          onAuthSuccess(data.session.access_token, data.session.refresh_token || '', data.user);
           setSuccess('Registrierung erfolgreich! Sie wurden eingeloggt.');
           setTimeout(() => {
             onClose();
@@ -92,8 +93,9 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
         }
       } else {
         localStorage.setItem('fb_session_token', data.session.access_token);
+        localStorage.setItem('fb_refresh_token', data.session.refresh_token);
         localStorage.setItem('fb_user', JSON.stringify(data.user));
-        onAuthSuccess(data.session.access_token, data.user);
+        onAuthSuccess(data.session.access_token, data.session.refresh_token || '', data.user);
         setSuccess('Erfolgreich eingeloggt!');
         setTimeout(() => {
           onClose();

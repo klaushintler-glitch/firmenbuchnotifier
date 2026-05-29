@@ -105,15 +105,16 @@ export default function Home() {
 
   // Load auth state and favorites on mount
   useEffect(() => {
-    const token = localStorage.getItem('fb_session_token');
+    const refreshToken = localStorage.getItem('fb_refresh_token');
     const userData = localStorage.getItem('fb_user');
     
-    if (token && userData) {
-      setSessionToken(token);
-      setUser(JSON.parse(userData));
-      fetchFavorites(token);
+    if (refreshToken && userData) {
+      refreshSession(refreshToken);
     } else {
-      // Load initial mock companies for display
+      // Clear any incomplete session state and load initial mock
+      localStorage.removeItem('fb_session_token');
+      localStorage.removeItem('fb_refresh_token');
+      localStorage.removeItem('fb_user');
       performSearch('');
     }
   }, []);
@@ -160,7 +161,35 @@ export default function Home() {
     }
   };
 
-  const handleAuthSuccess = (token: string, userData: any) => {
+  const refreshSession = async (rToken: string) => {
+    try {
+      const response = await fetch('/api/auth/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: rToken })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.session) {
+          localStorage.setItem('fb_session_token', data.session.access_token);
+          localStorage.setItem('fb_refresh_token', data.session.refresh_token);
+          localStorage.setItem('fb_user', JSON.stringify(data.user));
+          setSessionToken(data.session.access_token);
+          setUser(data.user);
+          fetchFavorites(data.session.access_token);
+          return;
+        }
+      }
+    } catch (err) {
+      console.error("Session refresh failed:", err);
+    }
+    
+    // If refresh fails, log out the user
+    handleLogout();
+  };
+
+  const handleAuthSuccess = (token: string, refreshToken: string, userData: any) => {
     setSessionToken(token);
     setUser(userData);
     fetchFavorites(token);
@@ -169,6 +198,7 @@ export default function Home() {
 
   const handleLogout = () => {
     localStorage.removeItem('fb_session_token');
+    localStorage.removeItem('fb_refresh_token');
     localStorage.removeItem('fb_user');
     setSessionToken(null);
     setUser(null);
