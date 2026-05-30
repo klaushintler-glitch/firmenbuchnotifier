@@ -16,7 +16,7 @@ interface Favorite {
   email_notifications?: boolean;
   status?: string;
   gericht?: string;
-  tracked_documents?: { document_name: string }[];
+  tracked_documents?: { document_name: string; inserted_at?: string }[];
   created_at: string;
 }
 
@@ -32,6 +32,9 @@ export default function Home() {
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [user, setUser] = useState<any | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  // Viewed timestamps state (to detect unread documents since last visit)
+  const [viewedTimestamps, setViewedTimestamps] = useState<Record<string, string>>({});
 
   // Drawer state
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
@@ -108,6 +111,20 @@ export default function Home() {
     const refreshToken = localStorage.getItem('fb_refresh_token');
     const userData = localStorage.getItem('fb_user');
     
+    // Load viewed timestamps from localStorage
+    const timestamps: Record<string, string> = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('fb_viewed_')) {
+        const fnr = key.substring('fb_viewed_'.length);
+        const val = localStorage.getItem(key);
+        if (val) {
+          timestamps[fnr] = val;
+        }
+      }
+    }
+    setViewedTimestamps(timestamps);
+
     if (refreshToken && userData) {
       refreshSession(refreshToken);
     } else {
@@ -397,25 +414,66 @@ export default function Home() {
   const openDrawer = (company: Company) => {
     setSelectedCompany(company);
     setIsDrawerOpen(true);
+    
+    // Save last viewed timestamp
+    const nowStr = new Date().toISOString();
+    localStorage.setItem(`fb_viewed_${company.fnr}`, nowStr);
+    setViewedTimestamps(prev => ({
+      ...prev,
+      [company.fnr]: nowStr
+    }));
+  };
+
+  const hasNewDocuments = (companyFnr: string, trackedDocs?: { document_name: string; inserted_at?: string }[]) => {
+    if (!trackedDocs || trackedDocs.length === 0) return false;
+    
+    const lastViewedStr = viewedTimestamps[companyFnr];
+    if (!lastViewedStr) {
+      // If never viewed, flag as new only if inserted in the last 7 days (avoid cluttering dashboard on first login)
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      
+      return trackedDocs.some(doc => {
+        if (!doc.inserted_at) return false;
+        return new Date(doc.inserted_at) > sevenDaysAgo;
+      });
+    }
+    
+    const lastViewedDate = new Date(lastViewedStr);
+    return trackedDocs.some(doc => {
+      if (!doc.inserted_at) return false;
+      return new Date(doc.inserted_at) > lastViewedDate;
+    });
   };
 
   // Companies to display (either filtered by search results or by favorites)
   const companiesToDisplay = showFavoritesOnly 
     ? favorites.map(fav => {
         const fullCompany = results.find(r => r.fnr === fav.fnr);
-        return fullCompany || {
-          fnr: fav.fnr,
-          name: fav.company_name,
-          sitz: fav.gericht || 'Österreich',
-          rechtsform: {
-            code: 'Firma',
-            text: 'Favorisiertes Unternehmen'
-          },
-          status: fav.status || 'aktiv',
-          gericht: fav.gericht || ''
+        return {
+          ...(fullCompany || {
+            fnr: fav.fnr,
+            name: fav.company_name,
+            sitz: fav.gericht || 'Österreich',
+            rechtsform: {
+              code: 'Firma',
+              text: 'Favorisiertes Unternehmen'
+            },
+            status: fav.status || 'aktiv',
+            gericht: fav.gericht || ''
+          }),
+          tracked_documents: fav.tracked_documents,
+          email_notifications: fav.email_notifications
         };
       })
-    : results;
+    : results.map(r => {
+        const fav = favorites.find(f => f.fnr === r.fnr);
+        return fav ? { 
+          ...r, 
+          tracked_documents: fav.tracked_documents, 
+          email_notifications: fav.email_notifications 
+        } : r;
+      });
 
   return (
     <div>
@@ -577,6 +635,11 @@ export default function Home() {
                       {company.status && (
                         <span className={`status-badge ${company.status.toLowerCase()}`} style={{ marginLeft: 0 }}>
                           {company.status.toLowerCase() === 'aktiv' ? 'Aktiv' : company.status.toLowerCase() === 'gelöscht' ? 'Gelöscht' : company.status}
+                        </span>
+                      )}
+                      {isFavorited(company.fnr) && hasNewDocuments(company.fnr, (company as any).tracked_documents) && (
+                        <span className="status-badge new-upload" style={{ marginLeft: 0 }} title="Seit Ihrem letzten Besuch wurden neue Dokumente hochgeladen">
+                          Neu
                         </span>
                       )}
                     </div>

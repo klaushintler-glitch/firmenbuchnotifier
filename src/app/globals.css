@@ -1323,6 +1323,21 @@ input:checked + .slider:before {
   }
 }
 
+/* New Upload Badge styling */
+.status-badge.new-upload {
+  background-color: rgba(24, 119, 242, 0.12); /* Soft Facebook Blue */
+  color: #1877F2;
+  border: 1px solid rgba(24, 119, 242, 0.2);
+}
+
+@media (prefers-color-scheme: dark) {
+  .status-badge.new-upload {
+    background-color: rgba(45, 136, 255, 0.15); /* Soft dark mode blue */
+    color: #2d88ff;
+    border-color: rgba(45, 136, 255, 0.25);
+  }
+}
+
 
 
 

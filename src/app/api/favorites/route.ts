@@ -41,7 +41,7 @@ export async function GET(request: Request) {
       const fnrs = data.map((f: any) => f.company_fn);
       const { data: docsData, error: docsError } = await supabaseAdmin
         .from('tracked_documents')
-        .select('fnr, document_name')
+        .select('fnr, document_name, inserted_at')
         .in('fnr', fnrs);
       
       if (!docsError && docsData) {
@@ -55,7 +55,10 @@ export async function GET(request: Request) {
       return {
         ...item,
         fnr: item.company_fn,
-        tracked_documents: companyDocs.map((d: any) => ({ document_name: d.document_name }))
+        tracked_documents: companyDocs.map((d: any) => ({ 
+          document_name: d.document_name,
+          inserted_at: d.inserted_at
+        }))
       };
     });
 
