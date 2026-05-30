@@ -4,6 +4,10 @@ import { supabaseAdmin } from '@/services/supabaseClient';
 
 const FNR_REGEX = /^\d{1,6}\s*[a-zA-Z]$/;
 
+// 24-hour in-memory cache for search results
+const searchCache = new Map<string, { data: Company[]; expiry: number }>();
+const CACHE_TTL = 1000 * 60 * 60 * 24; // 24 hours
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const query = searchParams.get('query');
@@ -13,6 +17,14 @@ export async function GET(request: Request) {
   }
 
   const trimmedQuery = query.trim();
+  const cacheKey = trimmedQuery.toLowerCase();
+
+  // Check cache
+  const cached = searchCache.get(cacheKey);
+  if (cached && cached.expiry > Date.now()) {
+    console.log(`[Cache Hit] Returning cached results for: "${trimmedQuery}"`);
+    return NextResponse.json(cached.data);
+  }
 
   try {
     let results: Company[] = [];
@@ -55,6 +67,12 @@ export async function GET(request: Request) {
         gericht: 'Handelsgericht Wien'
       }];
     }
+
+    // Store in cache
+    searchCache.set(cacheKey, {
+      data: results,
+      expiry: Date.now() + CACHE_TTL
+    });
 
     return NextResponse.json(results);
   } catch (error: any) {

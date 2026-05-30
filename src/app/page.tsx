@@ -80,6 +80,12 @@ export default function Home() {
       window.history.replaceState({}, document.title, window.location.pathname);
     }
 
+    const qParam = params.get('q') || params.get('query');
+    if (qParam && !fnrParam) {
+      setQuery(qParam);
+      performSearch(qParam);
+    }
+
     if (fnrParam) {
       setQuery(fnrParam);
       if (docParam) {
@@ -139,6 +145,11 @@ export default function Home() {
   // Real-time search debounce
   useEffect(() => {
     if (showFavoritesOnly) return;
+
+    // Only search if empty query (reset) or query is at least 3 characters long
+    if (query.trim() !== '' && query.trim().length < 3) {
+      return;
+    }
 
     const delayDebounce = setTimeout(() => {
       performSearch(query);
@@ -580,9 +591,16 @@ export default function Home() {
           </h2>
 
           {loading && (
-            <div className="grid-loader">
-              <span className="spinner-large"></span>
-              <p>Durchsuche Firmenbuch...</p>
+            <div className="masonry-grid" style={{ marginTop: '24px' }}>
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="company-card skeleton-card">
+                  <div className="skeleton-line skeleton-title" />
+                  <div className="skeleton-line skeleton-meta" style={{ width: '40%' }} />
+                  <div className="skeleton-line skeleton-meta" style={{ width: '60%' }} />
+                  <div className="skeleton-line skeleton-meta" style={{ width: '50%' }} />
+                  <div className="skeleton-line skeleton-button" />
+                </div>
+              ))}
             </div>
           )}
 

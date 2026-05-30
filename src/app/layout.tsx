@@ -25,7 +25,27 @@ export default function RootLayout({
       className={`${outfit.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col" suppressHydrationWarning>{children}</body>
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
+        {children}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "url": "https://firmenbuchnotify.at/",
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": {    
+                  "@type": "EntryPoint",
+                  "urlTemplate": "https://firmenbuchnotify.at/?q={search_term_string}"
+                },
+                "query-input": "required name=search_term_string"
+              }
+            })
+          }}
+        />
+      </body>
     </html>
   );
 }
