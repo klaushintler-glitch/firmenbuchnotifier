@@ -36,13 +36,13 @@ CREATE OR REPLACE TRIGGER on_auth_user_created
 CREATE TABLE IF NOT EXISTS public.favorites (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    fnr TEXT NOT NULL,
+    company_fn TEXT NOT NULL,
     company_name TEXT NOT NULL,
     email_notifications BOOLEAN NOT NULL DEFAULT TRUE,
     status TEXT DEFAULT 'aktiv',
     gericht TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    CONSTRAINT unique_user_favorite UNIQUE (user_id, fnr)
+    CONSTRAINT unique_user_favorite UNIQUE (user_id, company_fn)
 );
 
 -- Enable RLS for favorites
@@ -87,7 +87,7 @@ ALTER TABLE public.tracked_documents ENABLE ROW LEVEL SECURITY;
 
 
 -- Indexes for efficient queries
-CREATE INDEX IF NOT EXISTS idx_favorites_fnr ON public.favorites(fnr);
+CREATE INDEX IF NOT EXISTS idx_favorites_company_fn ON public.favorites(company_fn);
 CREATE INDEX IF NOT EXISTS idx_tracked_docs_fnr ON public.tracked_documents(fnr);
 
 -- ==========================================================
