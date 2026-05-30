@@ -461,3 +461,40 @@ Wir haben das visuelle Layout der Firmenkacheln im Grid aufgeräumt, um Redundan
    - Die Schaltfläche für den Favoriten-Status (das blaue Herz) verbleibt wie gewohnt in der rechten oberen Ecke, wofür die Ausrichtung des `.card-top`-Elements auf `justify-content: flex-end` angepasst wurde.
 3. **E2E-Tests:**
    - Alle automatisierten E2E-Tests sind weiterhin funktionsfähig und laufen erfolgreich durch.
+
+---
+
+## Release v1.8.0: Optimiertes Laden von Google Fonts (DSGVO-konform)
+
+Wir haben das Laden der Google Fonts umgestellt, um die Leistung zu maximieren und die DSGVO-Konformität in Deutschland und Österreich zu sichern.
+
+### Technische Umsetzung:
+1. **Verwendung von `next/font/google` ([`layout.tsx`](file:///c:/Users/klaus/OneDrive/Antigravity/Firmenbuchnotifier/src/app/layout.tsx)):**
+   - Die Schriftart `Outfit` wird nun nativ über Next.js geladen und optimiert. Next.js lädt die Font-Dateien zur Build-Zeit herunter und hostet sie selbst.
+   - Der Parameter `display: "swap"` stellt sicher, dass Texte während des Ladevorgangs sofort sichtbar bleiben, was die Ladezeit-Metrik (FCP) verbessert und Layout-Verschiebungen (CLS) verhindert.
+2. **Entfernung externer CSS-Imports ([`globals.css`](file:///c:/Users/klaus/OneDrive/Antigravity/Firmenbuchnotifier/src/app/globals.css)):**
+   - Der blockierende `@import url(...)`-Befehl wurde entfernt.
+   - Die CSS-Variable `--font-family` wurde auf die lokale CSS-Variable `var(--font-outfit)` umgestellt.
+3. **Vorteile:**
+   - Höhere Ladeperformance durch lokalen Server-Bezug.
+   - Keine Verbindungsaufbauten zu Google-Servern mehr (Schutz der Nutzerdaten/IP-Adressen).
+
+---
+
+## Release v1.8.1: Visuelle "Neu"-Kennzeichnung für ungelesene Dokumente in den Favoriten
+
+Wir haben ein intelligentes Benachrichtigungssystem integriert, mit dem Benutzer direkt auf den Kacheln sehen, ob seit ihrem letzten Besuch neue Dokumente für eine favorisierte Firma im Firmenbuch hochgeladen wurden.
+
+### Technische Umsetzung:
+1. **Erweiterte Favoriten-API ([`route.ts`](file:///c:/Users/klaus/OneDrive/Antigravity/Firmenbuchnotifier/src/app/api/favorites/route.ts)):**
+   - Der `GET`-Endpunkt für Favoriten liefert nun zusätzlich den Zeitstempel `inserted_at` (Eintragungsdatum) für jedes überwachte Dokument aus.
+2. **Besuchs-Tracking im Client ([`page.tsx`](file:///c:/Users/klaus/OneDrive/Antigravity/Firmenbuchnotifier/src/app/page.tsx)):**
+   - Die App speichert den Zeitstempel des letzten Besuchs (Klick auf die Firmenkarte zum Öffnen des `DocDrawer`) via LocalStorage (`fb_viewed_<FNR>`) und synchronisiert ihn im React-State (`viewedTimestamps`).
+3. **Algorithmus zur Erkennung ungelesener Dokumente:**
+   - Hat der Benutzer die Firma bereits besucht, gilt ein Dokument als neu, wenn dessen `inserted_at`-Zeitstempel neuer ist als der gespeicherte Besuchszeitstempel.
+   - Hat der Benutzer die Firma noch nie besucht (z. B. nach dem ersten Login), wird ein Dokument nur dann als neu gekennzeichnet, wenn es in den **letzten 7 Tagen** hinzugefügt wurde. Das verhindert ein Überfluten mit "Neu"-Badges bei alten Dokumenten.
+4. **Visuelles Feedback (CSS & JSX):**
+   - Ein neuer Badge-Typ `.status-badge.new-upload` (stilvolles Blau mit transparenter Hintergrundtönung) wird neben dem Firmennamen gerendert.
+   - Sobald der Benutzer die Karte anklickt, um den Drawer zu öffnen, wird der Zeitstempel aktualisiert, und das Badge verschwindet augenblicklich (Live-Feedback).
+5. **E2E-Tests & Kompilierung:**
+   - Der Build kompiliert fehlerfrei. Alle Tests laufen erfolgreich durch.
