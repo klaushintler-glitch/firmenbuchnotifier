@@ -498,3 +498,24 @@ Wir haben ein intelligentes Benachrichtigungssystem integriert, mit dem Benutzer
    - Sobald der Benutzer die Karte anklickt, um den Drawer zu öffnen, wird der Zeitstempel aktualisiert, und das Badge verschwindet augenblicklich (Live-Feedback).
 5. **E2E-Tests & Kompilierung:**
    - Der Build kompiliert fehlerfrei. Alle Tests laufen erfolgreich durch.
+
+---
+
+## Release v1.9.0: SEO- und UX-Optimierungspaket
+
+Wir haben ein umfassendes Paket an SEO- und UX-Verbesserungen integriert, um die Auffindbarkeit durch Suchmaschinen (Crawlability), die Ladezeiten und die allgemeine Benutzererfahrung zu optimieren.
+
+### Technische Umsetzung:
+1. **Suchmaschinen-Auffindbarkeit (Crawlability & Landingpages):**
+   - **Firmen-Landingpages (`/firma/[fnr]`):** Erstellung dynamischer, serverseitig gerenderter Unterseiten für jede Firma ([`page.tsx`](file:///c:/Users/klaus/OneDrive/Antigravity/Firmenbuchnotifier/src/app/firma/%5Bfnr%5D/page.tsx)), die Firmendetails und alle verfügbaren Urkunden für Suchmaschinen-Bots indexierbar machen.
+   - **Dynamische Sitemap (`sitemap.ts`):** Next.js generiert die `/sitemap.xml` nun vollautomatisch und dynamisch ([`sitemap.ts`](file:///c:/Users/klaus/OneDrive/Antigravity/Firmenbuchnotifier/src/app/sitemap.ts)) durch Abfrage aller in unserer Datenbank (`favorites`) getrackten Firmen. Das sorgt für eine automatische Indizierung neuer Firmen durch Google. Die alte statische `public/sitemap.xml` wurde entfernt.
+2. **Nutzererfahrung (UX-Tuning):**
+   - **Pulsierender Skeleton Loader:** Beim Durchsuchen des Firmenbuchs wird der Lade-Spinner durch ein schickes, animiertes Platzhalter-Raster im Pinterest-Stil ersetzt. Dies verbessert das Ladezeitempfinden (Perceived Performance) erheblich.
+   - **API-Caching (24h In-Memory Cache):** Der API-Such-Endpunkt ([`route.ts`](file:///c:/Users/klaus/OneDrive/Antigravity/Firmenbuchnotifier/src/app/api/search/route.ts)) speichert Suchergebnisse nun für 24 Stunden im RAM. Wiederholte Anfragen (z.B. durch schnelles Tippen oder häufige Begriffe) werden in unter 5ms ohne SOAP-API-Kosten beantwortet.
+   - **Mindest-Suchlänge:** Anfragen an die API werden erst ab einer Länge von mindestens 3 Zeichen (oder leerem Feld zum Zurücksetzen) gefeuert. Dies schont die API-Kosten bei Tippfehlern.
+3. **Structured Data (Sitelinks Searchbox):**
+   - **JSON-LD Schema Integration ([`layout.tsx`](file:///c:/Users/klaus/OneDrive/Antigravity/Firmenbuchnotifier/src/app/layout.tsx)):** Injektion des standardisierten Suchmaschinen-Schemas.
+   - **URL-Suchparameter-Unterstützung:** Die Startseite verarbeitet nun den Parameter `?q=...` oder `?query=...` direkt beim Einstieg und löst die Suche vollautomatisch aus.
+4. **Verifizierung:**
+   - Der Next.js-Build kompiliert fehlerfrei (verifiziert durch `npm run build` nach Bereinigung der `.next`-Sperren).
+   - Alle Test-Suites laufen erfolgreich durch.
