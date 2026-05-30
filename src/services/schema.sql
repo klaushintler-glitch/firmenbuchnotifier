@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 -- Enable Row Level Security (RLS) for profiles
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view their own profile" ON public.profiles;
 CREATE POLICY "Users can view their own profile"
     ON public.profiles FOR SELECT
     USING (auth.uid() = id);
@@ -47,6 +48,7 @@ CREATE TABLE IF NOT EXISTS public.favorites (
 -- Enable RLS for favorites
 ALTER TABLE public.favorites ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can manage their own favorites" ON public.favorites;
 CREATE POLICY "Users can manage their own favorites"
     ON public.favorites FOR ALL
     USING (auth.uid() = user_id);
