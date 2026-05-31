@@ -465,11 +465,6 @@ export default function Home() {
           ...(fullCompany || {
             fnr: fav.fnr,
             name: fav.company_name,
-            sitz: fav.gericht || 'Österreich',
-            rechtsform: {
-              code: 'Firma',
-              text: 'Favorisiertes Unternehmen'
-            },
             status: fav.status || 'aktiv',
             gericht: fav.gericht || ''
           }),
@@ -667,14 +662,12 @@ export default function Home() {
                         <span className="card-meta-label">FNR:</span>
                         <span>{company.fnr}</span>
                       </div>
-                      <div className="card-meta-item">
-                        <span className="card-meta-label">Sitz:</span>
-                        <span>{company.sitz}</span>
-                      </div>
-                      <div className="card-meta-item">
-                        <span className="card-meta-label">Rechtsform:</span>
-                        <span>{company.rechtsform.text}</span>
-                      </div>
+                      {company.gericht && (
+                        <div className="card-meta-item">
+                          <span className="card-meta-label">Gericht:</span>
+                          <span>{company.gericht}</span>
+                        </div>
+                      )}
                     </div>
 
                     {isFavorited(company.fnr) && renderDocStats(company.fnr)}

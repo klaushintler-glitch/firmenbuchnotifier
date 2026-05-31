@@ -1,8 +1,8 @@
 export interface Company {
   fnr: string;
   name: string;
-  sitz: string;
-  rechtsform: {
+  sitz?: string;
+  rechtsform?: {
     code: string;
     text: string;
   };

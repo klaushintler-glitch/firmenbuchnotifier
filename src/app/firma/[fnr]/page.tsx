@@ -150,17 +150,9 @@ export default async function CompanyProfilePage({ params }: PageProps) {
                 <span className="card-meta-label" style={{ display: 'block', fontSize: '12px', color: 'var(--text-secondary)' }}>Firmenbuchnummer (FNR)</span>
                 <strong style={{ color: 'var(--text-main)' }}>{company.fnr}</strong>
               </div>
-              <div>
-                <span className="card-meta-label" style={{ display: 'block', fontSize: '12px', color: 'var(--text-secondary)' }}>Sitz (Ort)</span>
-                <strong style={{ color: 'var(--text-main)' }}>{company.sitz}</strong>
-              </div>
-              <div>
-                <span className="card-meta-label" style={{ display: 'block', fontSize: '12px', color: 'var(--text-secondary)' }}>Rechtsform</span>
-                <strong style={{ color: 'var(--text-main)' }}>{company.rechtsform.text}</strong>
-              </div>
               {company.gericht && (
                 <div>
-                  <span className="card-meta-label" style={{ display: 'block', fontSize: '12px', color: 'var(--text-secondary)' }}>Gericht</span>
+                  <span className="card-meta-label" style={{ display: 'block', fontSize: '12px', color: 'var(--text-secondary)' }}>Zuständiges Gericht</span>
                   <strong style={{ color: 'var(--text-main)' }}>{company.gericht}</strong>
                 </div>
               )}

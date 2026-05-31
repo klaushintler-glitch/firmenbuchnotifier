@@ -118,7 +118,6 @@ export default function DocDrawer({ isOpen, onClose, company, highlightDocKey }:
           
           {company && (
             <div className="drawer-title-section">
-              <span className="drawer-badge">{company.rechtsform.code}</span>
               <div className="drawer-company-name-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '4px' }}>
                 <h2 className="drawer-company-name" style={{ margin: 0 }}>{company.name}</h2>
                 {company.status && (
@@ -131,9 +130,11 @@ export default function DocDrawer({ isOpen, onClose, company, highlightDocKey }:
                 <div>
                   <strong>FNR:</strong> {company.fnr}
                 </div>
-                <div>
-                  <strong>Sitz:</strong> {company.sitz}
-                </div>
+                {company.gericht && (
+                  <div>
+                    <strong>Gericht:</strong> {company.gericht}
+                  </div>
+                )}
               </div>
             </div>
           )}
