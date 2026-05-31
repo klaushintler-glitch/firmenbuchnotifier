@@ -32,7 +32,14 @@ export default function DocDrawer({ isOpen, onClose, company, highlightDocKey }:
     try {
       const response = await fetch(`/api/documents?fnr=${encodeURIComponent(company.fnr)}`);
       if (!response.ok) {
-        throw new Error('Dokumente konnten nicht geladen werden.');
+        let errMsg = 'Dokumente konnten nicht geladen werden.';
+        try {
+          const errData = await response.json();
+          if (errData && errData.error) {
+            errMsg = errData.error;
+          }
+        } catch (_) {}
+        throw new Error(errMsg);
       }
       const data = await response.json();
       setDocuments(data || []);

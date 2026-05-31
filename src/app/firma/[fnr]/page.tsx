@@ -65,8 +65,13 @@ export default async function CompanyProfilePage({ params }: PageProps) {
   let error = '';
   try {
     documents = await getCompanyDocuments(cleanFnr);
-  } catch (err) {
-    error = 'Dokumente konnten nicht geladen werden.';
+  } catch (err: any) {
+    const errorMsg = err.message || '';
+    if (errorMsg.includes('429')) {
+      error = 'Zu viele Anfragen an das Firmenbuch (Rate-Limit überschritten). Bitte versuchen Sie es in einigen Minuten erneut.';
+    } else {
+      error = err.message || 'Dokumente konnten nicht geladen werden.';
+    }
   }
   
   const formatSize = (bytes: number) => {
