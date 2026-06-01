@@ -1,4 +1,6 @@
 import assert from 'assert';
+// Force Mock/Demo mode for unit tests
+process.env.FIRMENBUCH_API_KEY = '';
 import { runCronCheck } from '../bin/cron-check';
 import { supabaseAdmin } from '../services/supabaseClient';
 import { mockOverrides } from '../services/firmenbuchService';

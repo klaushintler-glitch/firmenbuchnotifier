@@ -1,3 +1,5 @@
+import { XMLParser } from 'fast-xml-parser';
+
 export interface Company {
   fnr: string;
   name: string;
@@ -137,8 +139,60 @@ function getMockDocuments(fnr: string): DocumentInfo[] {
   ];
 }
 
+// Helpers for SOAP and XML processing
+function stripXmlNamespaces(xml: string): string {
+  return xml.replace(/<\/?([a-zA-Z0-9_\-\.]+):/g, (match) => {
+    return match.startsWith('</') ? '</' : '<';
+  });
+}
+
+function escapeXml(unsafe: string): string {
+  return unsafe.replace(/[<>&'"]/g, (c) => {
+    switch (c) {
+      case '<': return '&lt;';
+      case '>': return '&gt;';
+      case '&': return '&amp;';
+      case '\'': return '&apos;';
+      case '"': return '&quot;';
+      default: return c;
+    }
+  });
+}
+
+async function soapRequest(requestXml: string): Promise<string> {
+  const url = 'https://justizonline.gv.at/jop/api/at.gv.justiz.fbw/ws';
+  const apiKey = process.env.FIRMENBUCH_API_KEY || '';
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/soap+xml;charset=UTF-8',
+      'X-API-KEY': apiKey
+    },
+    body: requestXml
+  });
+
+  const text = await response.text();
+
+  if (!response.ok) {
+    let faultReason = `Justiz API responded with status ${response.status}: ${response.statusText}`;
+    try {
+      const cleanText = stripXmlNamespaces(text);
+      const parser = new XMLParser({ ignoreAttributes: true });
+      const json = parser.parse(cleanText);
+      const reasonText = json?.Envelope?.Body?.Fault?.Reason?.Text;
+      if (reasonText) {
+        faultReason = typeof reasonText === 'object' ? (reasonText['#text'] || JSON.stringify(reasonText)) : reasonText;
+      }
+    } catch (_) {}
+    throw new Error(faultReason);
+  }
+
+  return text;
+}
+
 /**
- * REST API: Search for a company
+ * REST/SOAP API: Search for a company
  */
 export async function searchCompany(wortlaut: string, exact = false): Promise<Company[]> {
   if (mockOverrides.searchCompany) {
@@ -150,63 +204,66 @@ export async function searchCompany(wortlaut: string, exact = false): Promise<Co
     return getMockCompaniesFallback(wortlaut);
   }
 
-  // 1. If mock mode, try querying the public, no-key endpoint of firmafind.at first!
-  // If it fails (due to rate limits), fall back to hardcoded mock data.
   if (isMockMode()) {
-    console.log(`[FirmaFind API] Mock mode: attempting public search for: "${wortlaut}"`);
-    try {
-      const response = await fetch(`https://firmafind.at/api/companies/public?q=${encodeURIComponent(wortlaut)}`);
-      if (response.ok) {
-        const json = await response.json();
-        const raw = json.data || [];
-        if (raw.length > 0) {
-          return raw.map((item: any) => ({
-            fnr: item.fnr,
-            name: item.name,
-            sitz: item.sitz || item.city || '',
-            rechtsform: mapRechtsform(item.rechtsform || ''),
-            status: item.status || '',
-            gericht: item.gericht || ''
-          }));
-        }
-      }
-    } catch (e) {
-      console.warn("[FirmaFind API] Public search failed. Falling back to hardcoded mock data:", e);
-    }
+    console.log(`[Justiz API] Mock mode: returning fallbacks for: "${wortlaut}"`);
     return getMockCompaniesFallback(wortlaut);
   }
 
-  // 2. Authenticated search
   try {
-    const url = `https://firmafind.at/api/companies?name=${encodeURIComponent(wortlaut)}`;
-    const response = await fetch(url, {
-      headers: {
-        "x-api-key": process.env.FIRMENBUCH_API_KEY || ''
-      }
+    const requestXml = `<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:suc="ns://firmenbuch.justiz.gv.at/Abfrage/SucheFirmaRequest">
+  <soap:Header/>
+  <soap:Body>
+    <suc:SUCHEFIRMAREQUEST>
+      <suc:FIRMENWORTLAUT>${escapeXml(wortlaut)}</suc:FIRMENWORTLAUT>
+      <suc:EXAKTESUCHE>${exact}</suc:EXAKTESUCHE>
+      <suc:SUCHBEREICH>1</suc:SUCHBEREICH>
+      <suc:GERICHT></suc:GERICHT>
+      <suc:RECHTSFORM></suc:RECHTSFORM>
+      <suc:RECHTSEIGENSCHAFT></suc:RECHTSEIGENSCHAFT>
+      <suc:ORTNR></suc:ORTNR>
+    </suc:SUCHEFIRMAREQUEST>
+  </soap:Body>
+</soap:Envelope>`;
+
+    const responseText = await soapRequest(requestXml);
+    const cleanXml = stripXmlNamespaces(responseText);
+    const parser = new XMLParser({ ignoreAttributes: true });
+    const jsonObj = parser.parse(cleanXml);
+
+    const responseBody = jsonObj?.Envelope?.Body?.SUCHEFIRMARESPONSE;
+    if (!responseBody) return [];
+
+    const ergebnis = responseBody.ERGEBNIS;
+    if (!ergebnis) return [];
+
+    const items = Array.isArray(ergebnis) ? ergebnis : [ergebnis];
+    return items.map((item: any) => {
+      const nameRaw = item.NAME;
+      const name = Array.isArray(nameRaw) ? nameRaw.join(' ') : (nameRaw || '');
+      const statusRaw = (item.STATUS || '').trim().toLowerCase();
+      const status = statusRaw === 'gelöscht' ? 'gelöscht' : 'aktiv';
+      
+      return {
+        fnr: item.FNR,
+        name: name,
+        sitz: item.SITZ || 'Österreich',
+        status: status,
+        gericht: item.GERICHT?.TEXT || '',
+        rechtsform: {
+          code: item.RECHTSFORM?.CODE || 'Firma',
+          text: item.RECHTSFORM?.TEXT || 'Firmenbuch-Eintrag'
+        }
+      };
     });
-
-    if (!response.ok) {
-      throw new Error(`FirmaFind API responded with status ${response.status}: ${response.statusText}`);
-    }
-
-    const json = await response.json();
-    const raw = json.data || [];
-    return raw.map((item: any) => ({
-      fnr: item.fnr,
-      name: item.name,
-      sitz: item.sitz || item.city || item.address?.seat || '',
-      rechtsform: mapRechtsform(item.rechtsform || ''),
-      status: item.status || '',
-      gericht: item.gericht || ''
-    }));
   } catch (error) {
-    console.error("[FirmaFind API] Search error:", error);
+    console.error("[Justiz API] Search error:", error);
     throw error;
   }
 }
 
 /**
- * REST API: List documents for a given FNR
+ * REST/SOAP API: List documents for a given FNR
  */
 export async function getCompanyDocuments(fnr: string): Promise<DocumentInfo[]> {
   if (mockOverrides.getCompanyDocuments) {
@@ -219,38 +276,45 @@ export async function getCompanyDocuments(fnr: string): Promise<DocumentInfo[]> 
   }
 
   if (isMockMode()) {
-    console.log(`[FirmaFind API] Mock mode: returning mock documents for: "${fnr}"`);
+    console.log(`[Justiz API] Mock mode: returning mock documents for: "${fnr}"`);
     return getMockDocuments(fnr);
   }
 
   try {
-    // Clean FNR of spaces for FirmaFind API query
-    const cleanFnr = fnr.replace(/\s+/g, '');
-    const url = `https://firmafind.at/api/documents?fnr=${encodeURIComponent(cleanFnr)}`;
-    const response = await fetch(url, {
-      headers: {
-        "x-api-key": process.env.FIRMENBUCH_API_KEY || ''
-      }
-    });
+    const requestXml = `<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:suc="ns://firmenbuch.justiz.gv.at/Abfrage/SucheUrkundeRequest">
+  <soap:Header/>
+  <soap:Body>
+    <suc:SUCHEURKUNDEREQUEST>
+      <suc:FNR>${escapeXml(fnr)}</suc:FNR>
+    </suc:SUCHEURKUNDEREQUEST>
+  </soap:Body>
+</soap:Envelope>`;
 
-    if (!response.ok) {
-      throw new Error(`FirmaFind API responded with status ${response.status}: ${response.statusText}`);
-    }
+    const responseText = await soapRequest(requestXml);
+    const cleanXml = stripXmlNamespaces(responseText);
+    const parser = new XMLParser({ ignoreAttributes: true });
+    const jsonObj = parser.parse(cleanXml);
 
-    const json = await response.json();
-    const raw = json.data || [];
-    const mapped = raw.map((item: any) => ({
-      key: item.key,
-      fnr: item.fnr,
-      az: item.az,
-      dokumentart: item.dokumentart?.text || item.dokumentart?.code || 'Dokument',
-      groesse: item.groesse || 0,
-      eingereicht: item.eingereicht || '',
-      stichtag: item.stichtag || item.metadaten?.stichtag || ''
+    const responseBody = jsonObj?.Envelope?.Body?.SUCHEURKUNDERESPONSE;
+    if (!responseBody) return [];
+
+    const ergebnis = responseBody.ERGEBNIS;
+    if (!ergebnis) return [];
+
+    const items = Array.isArray(ergebnis) ? ergebnis : [ergebnis];
+    const mapped = items.map((item: any) => ({
+      key: item.KEY,
+      fnr: item.FNR,
+      az: item.AZ,
+      dokumentart: item.DOKUMENTART?.TEXT || item.DOKUMENTART?.CODE || 'Dokument',
+      groesse: Number(item.GROESSE) || 0,
+      eingereicht: item.EINGEREICHT || '',
+      stichtag: item.STICHTAG || ''
     }));
 
     // Sort by submission date (eingereicht) descending (newest first)
-    mapped.sort((a: DocumentInfo, b: DocumentInfo) => {
+    mapped.sort((a, b) => {
       const dateA = a.eingereicht || '';
       const dateB = b.eingereicht || '';
       return dateB.localeCompare(dateA);
@@ -258,13 +322,13 @@ export async function getCompanyDocuments(fnr: string): Promise<DocumentInfo[]> 
 
     return mapped;
   } catch (error) {
-    console.error("[FirmaFind API] Get documents error:", error);
+    console.error("[Justiz API] Get documents error:", error);
     throw error;
   }
 }
 
 /**
- * REST API: Download a document and return metadata & base64 content
+ * REST/SOAP API: Download a document and return metadata & base64 content
  */
 export async function downloadDocument(key: string): Promise<DocumentDownload> {
   if (mockOverrides.downloadDocument) {
@@ -277,45 +341,52 @@ export async function downloadDocument(key: string): Promise<DocumentDownload> {
   }
 
   if (isMockMode()) {
-    console.log(`[FirmaFind API] Mock mode: downloading mock file for: "${key}"`);
+    console.log(`[Justiz API] Mock mode: downloading mock file for: "${key}"`);
     return getMockDocumentDownload(key);
   }
 
   try {
-    const url = `https://firmafind.at/api/documents/${encodeURIComponent(key)}`;
-    const response = await fetch(url, {
-      headers: {
-        "x-api-key": process.env.FIRMENBUCH_API_KEY || ''
-      }
-    });
+    const requestXml = `<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:urk="ns://firmenbuch.justiz.gv.at/Abfrage/UrkundeRequest">
+  <soap:Header/>
+  <soap:Body>
+    <urk:URKUNDEREQUEST>
+      <urk:KEY>${escapeXml(key)}</urk:KEY>
+    </urk:URKUNDEREQUEST>
+  </soap:Body>
+</soap:Envelope>`;
 
-    if (!response.ok) {
-      throw new Error(`FirmaFind API responded with status ${response.status}: ${response.statusText}`);
+    const responseText = await soapRequest(requestXml);
+    const cleanXml = stripXmlNamespaces(responseText);
+    const parser = new XMLParser({ ignoreAttributes: true });
+    const jsonObj = parser.parse(cleanXml);
+
+    const responseBody = jsonObj?.Envelope?.Body?.URKUNDERESPONSE;
+    if (!responseBody) {
+      throw new Error('Document download payload empty or invalid');
     }
 
-    const json = await response.json();
-    const payload = json.data;
-    if (!payload) {
-      throw new Error(`Document data for key ${key} not found.`);
+    const metadaten = responseBody.METADATEN;
+    const dokument = responseBody.DOKUMENT;
+
+    if (!dokument) {
+      throw new Error('Document data section is missing');
     }
 
-    const metadaten = payload.metadaten;
-    const dokument = payload.dokument;
-
-    const docType = metadaten?.dokumentart?.text || 'Dokument';
-    const ext = dokument?.dateiendung || 'pdf';
-    const cleanFnr = metadaten?.fnr || 'fb';
+    const docType = metadaten?.DOKUMENTART?.TEXT || 'Dokument';
+    const ext = dokument.DATEIENDUNG || 'pdf';
+    const cleanFnr = metadaten?.FNR || 'fb';
     const filename = `${docType.replace(/[^a-zA-Z0-9]/g, '_')}_${cleanFnr.trim()}.${ext}`;
 
     return {
       key: key,
-      contentType: dokument?.contentType || "application/pdf",
+      contentType: dokument.CONTENTTYPE || "application/pdf",
       extension: ext,
       filename: filename,
-      content: dokument?.content || ""
+      content: dokument.CONTENT || ""
     };
   } catch (error) {
-    console.error("[FirmaFind API] Download document error:", error);
+    console.error("[Justiz API] Download document error:", error);
     throw error;
   }
 }

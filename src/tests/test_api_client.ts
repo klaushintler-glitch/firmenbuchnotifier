@@ -1,4 +1,6 @@
 import assert from 'assert';
+// Force Mock/Demo mode for unit tests
+process.env.FIRMENBUCH_API_KEY = '';
 import { searchCompany, getCompanyDocuments, downloadDocument, isMockMode } from '../services/firmenbuchService';
 import { XMLParser } from 'fast-xml-parser';
 
