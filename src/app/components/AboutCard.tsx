@@ -27,7 +27,7 @@ export default function AboutCard({ isOpen, onClose }: AboutCardProps) {
 
         <div className="drawer-body" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', overflowY: 'auto' }}>
           <p className="about-text">
-            Dieses Projekt ermöglicht eine einfache Suche im österreichischen Firmenbuch (Daten zur Verfügung gestellt von findfirma.at). 
+            Dieses Projekt ermöglicht eine einfache Suche im österreichischen Firmenbuch (Daten von justiz.gv.at). 
             Favorisieren Sie bis zu <strong>10 Unternehmen</strong>, um sofort per E-Mail benachrichtigt zu werden, sobald ein neues Dokument (z.B. Jahresabschluss, Beschlüsse) eingereicht wird.
           </p>
 
