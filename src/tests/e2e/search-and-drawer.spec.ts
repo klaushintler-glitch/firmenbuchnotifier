@@ -6,7 +6,7 @@ test.describe('Firmenbuch Notifier - Search and Drawer E2E Tests', () => {
     await page.goto('/');
 
     // 2. Assert page headers and elements are visible
-    await expect(page.locator('.logo-text')).toHaveText('FirmenbuchNotifier');
+    await expect(page.locator('.logo-text')).toHaveText('firmenbuchnotify.at');
     const searchInput = page.locator('.search-input');
     await expect(searchInput).toBeVisible();
 

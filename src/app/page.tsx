@@ -496,7 +496,7 @@ export default function Home() {
               objectFit: 'contain' 
             }} 
           />
-          <span className="logo-text">FirmenbuchNotifier</span>
+          <span className="logo-text">firmenbuchnotify.at</span>
         </div>
 
         <div className="search-container">
@@ -725,7 +725,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="app-footer">
         <div className="footer-content">
-          <span>&copy; {new Date().getFullYear()} FirmenbuchNotifier</span>
+          <span>&copy; {new Date().getFullYear()} firmenbuchnotify.at</span>
           <span className="footer-links">
             <button onClick={() => openInfoModal('impressum')} className="footer-link-btn">Impressum</button>
             <span className="footer-separator">&bull;</span>

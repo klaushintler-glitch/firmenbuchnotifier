@@ -135,7 +135,7 @@ export default async function CompanyProfilePage({ params }: PageProps) {
               objectFit: 'contain' 
             }} 
           />
-          <span className="logo-text">FirmenbuchNotifier</span>
+          <span className="logo-text">firmenbuchnotify.at</span>
         </Link>
         <div className="header-actions">
           <Link href={`/?fnr=${cleanFnr}`} className="action-btn btn-primary" style={{ textDecoration: 'none' }}>
