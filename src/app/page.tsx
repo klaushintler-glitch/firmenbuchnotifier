@@ -496,7 +496,7 @@ export default function Home() {
               objectFit: 'contain' 
             }} 
           />
-          <h1 className="logo-text">FirmenbuchNotifier</h1>
+          <span className="logo-text">FirmenbuchNotifier</span>
         </div>
 
         <div className="search-container">
@@ -579,11 +579,16 @@ export default function Home() {
       <div className="app-container">
         {/* Grid Content */}
         <main className="main-content">
-          <h2 className="content-title">
+          <h1 className="content-title">
             {showFavoritesOnly 
               ? 'Meine favorisierten Firmen' 
-              : 'Österreichische Firmendaten recherchieren und Firmenbuchänderungen automatisch überwachen'}
-          </h2>
+              : 'Kostenlose Firmenbuchsuche Österreich & automatische Überwachung'}
+          </h1>
+          {!showFavoritesOnly && (
+            <p className="content-subtitle" style={{ color: 'var(--text-secondary)', marginTop: '-8px', marginBottom: '24px', fontSize: '15px', lineHeight: '1.5' }}>
+              Nutzen Sie die kostenfreie Firmenbuchsuche, um offizielle Firmendaten und Jahresabschlüsse zu recherchieren. Überwachen Sie Firmenbuchänderungen automatisch via E-Mail-Benachrichtigung.
+            </p>
+          )}
 
           {loading && (
             <div className="masonry-grid" style={{ marginTop: '24px' }}>

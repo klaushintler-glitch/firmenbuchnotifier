@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { getCompanyDocuments, Company, DocumentInfo } from "@/services/firmenbuchService";
 import { supabaseAdmin } from "@/services/supabaseClient";
 import { searchCompany } from "@/services/firmenbuchService";
@@ -52,6 +53,17 @@ async function getCompanyDetails(fnr: string): Promise<Company> {
     rechtsform: { code: 'Firma', text: 'Firmenbuch-Eintrag' },
     status: 'aktiv',
     gericht: ''
+  };
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { fnr } = await params;
+  const cleanFnr = fnr.replace(/\s+/g, '');
+  const company = await getCompanyDetails(cleanFnr);
+
+  return {
+    title: `${company.name} - Firmenbuchsuche Österreich (FNR ${company.fnr})`,
+    description: `Offizielle Firmenbuchdaten und historische Urkunden für ${company.name} (Firmenbuchnummer ${company.fnr}) kostenlos abrufen. Registrierungsgericht: ${company.gericht || 'Österreich'}.`,
   };
 }
 
@@ -123,7 +135,7 @@ export default async function CompanyProfilePage({ params }: PageProps) {
               objectFit: 'contain' 
             }} 
           />
-          <h1 className="logo-text">FirmenbuchNotifier</h1>
+          <span className="logo-text">FirmenbuchNotifier</span>
         </Link>
         <div className="header-actions">
           <Link href={`/?fnr=${cleanFnr}`} className="action-btn btn-primary" style={{ textDecoration: 'none' }}>
@@ -137,7 +149,7 @@ export default async function CompanyProfilePage({ params }: PageProps) {
         <main className="main-content" style={{ maxWidth: '800px', margin: '0 auto', width: '100%' }}>
           <div className="company-card" style={{ cursor: 'default', padding: '24px', marginBottom: '24px' }}>
             <div className="card-title-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
-              <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 700, color: 'var(--text-main)' }}>{company.name}</h2>
+              <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 700, color: 'var(--text-main)' }}>{company.name}</h1>
               {company.status && (
                 <span className={`status-badge ${company.status.toLowerCase()}`} style={{ marginLeft: 0 }}>
                   {company.status.toLowerCase() === 'aktiv' ? 'Aktiv' : company.status.toLowerCase() === 'gelöscht' ? 'Gelöscht' : company.status}

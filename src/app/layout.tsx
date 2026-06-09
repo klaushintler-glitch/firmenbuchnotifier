@@ -10,8 +10,8 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Firmenbuch Notifier - Kostenlose Firmenbuchsuche & Benachrichtigungen",
-  description: "Durchsuchen Sie das österreichische Firmenbuch (HVD) kostenlos, laden Sie Urkunden herunter und abonnieren Sie E-Mail-Updates für bis zu 10 Firmen bei neuen Veröffentlichungen.",
+  title: "Firmenbuchsuche Österreich | Kostenlos & Automatisch | Firmenbuch Notifier",
+  description: "Einfache und kostenlose Firmenbuchsuche für Österreich (HVD). Finden Sie offizielle Firmenbucheinträge, laden Sie Urkunden herunter und aktivieren Sie automatische Updates.",
 };
 
 export default function RootLayout({
