@@ -47,6 +47,6 @@ next-env.d.ts
 /playwright/.cache/
 
 # raw logo source files
-/logo gross juni.png
 /logo klein juni.png
+
 
